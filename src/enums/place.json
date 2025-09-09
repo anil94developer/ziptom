@@ -1,0 +1,178 @@
+[
+  {
+    "city": "Jaipur",
+    "places": [
+      { "id": 1, "name": "Hawa Mahal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"},
+      { "id": 2, "name": "Amber Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "City Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Jantar Mantar" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Nahargarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Jal Mahal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Albert Hall Museum" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Birla Mandir" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Galta Ji Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Sisodia Rani Garden" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ],
+    "hotels": [
+      { "id": 1, "name": "Taj Rambagh Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "ITC Rajputana" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Trident Jaipur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "The Lalit Jaipur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Hilton Jaipur","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ]
+  },
+  {
+    "city": "Jodhpur",
+    "places": [
+      { "id": 1, "name": "Mehrangarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Umaid Bhawan Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Jaswant Thada" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Mandore Gardens" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Clock Tower" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Rao Jodha Desert Rock Park" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Toorji Ka Jhalra" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Balsamand Lake" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Chamunda Mata Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Kaylana Lake" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ],
+    "hotels": [
+      { "id": 1, "name": "Umaid Bhawan Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "RAAS Jodhpur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Taj Hari Mahal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Indana Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "WelcomHotel Jodhpur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ]
+  },
+  {
+    "city": "Udaipur",
+    "places": [
+      { "id": 1, "name": "City Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Lake Pichola" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Jag Mandir" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Fateh Sagar Lake" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Saheliyon Ki Bari" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Bagore Ki Haveli" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Jagdish Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Sajjangarh Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Shilpgram" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Gulab Bagh" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ],
+    "hotels": [
+      { "id": 1, "name": "The Oberoi Udaivilas" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Taj Lake Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Trident Udaipur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Leela Palace Udaipur" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Fateh Prakash Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ]
+  },
+  {
+    "city": "Ajmer",
+    "places": [
+      { "id": 1, "name": "Ajmer Sharif Dargah" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Ana Sagar Lake" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Adhai Din Ka Jhonpra" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Taragarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Nasiyan Jain Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Daulat Bagh" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Mayo College" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Foy Sagar Lake" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Akbari Fort & Museum" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Victoria Jubilee Clock Tower","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ],
+    "hotels": [
+      { "id": 1, "name": "The Royal Melange Beacon" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Hotel Ajmer Inn" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Hotel LN Courtyard" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Hotel Regal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Hotel Embassy","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ]
+  },
+  {
+    "city": "Alwar",
+    "places": [
+      { "id": 1, "name": "Bala Quila Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Sariska Tiger Reserve" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Moosi Maharani Ki Chhatri" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Siliserh Lake Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "City Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Vijay Mandir Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Bhangarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Company Bagh" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Garbhaji Waterfall" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Neemrana Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ],
+    "hotels": [
+      { "id": 1, "name": "Neemrana Fort Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Sariska Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Lemon Tree Hotel" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "MGB Hotels" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Dadhikar Fort","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ]
+  },
+  {
+    "city": "Bikaner",
+    "places": [
+      { "id": 1, "name": "Junagarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Karni Mata Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Lalgarh Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "National Research Centre on Camel" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Gajner Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Shri Laxminath Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Rampuria Havelis" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Ganga Singh Museum" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Kodamdeshwar Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Devi Kund Sagar","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ],
+    "hotels": [
+      { "id": 1, "name": "Laxmi Niwas Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Narendra Bhawan" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Hotel Sagar" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Hotel Raj Vilas Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Hotel Bhairon Vilas" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg"}
+    ]
+  },
+  {
+    "city": "Kota",
+    "places": [
+      { "id": 1, "name": "Seven Wonders Park" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Kota Barrage" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Jagmandir Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Garadia Mahadev Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "City Palace" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Chambal Garden" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Godavari Dham Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Maharao Madho Singh Museum" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Abheda Mahal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Gaipernath Waterfall","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ],
+    "hotels": [
+      { "id": 1, "name": "Country Inn & Suites" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Hotel Lilac" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Hotel Surya Royal" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Hotel Rallentino" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Hotel Clarks Premier","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ]
+  },
+  {
+    "city": "Sikar",
+    "places": [
+      { "id": 1, "name": "Harshnath Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Laxmangarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Khatu Shyamji Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Jeen Mata Temple" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Devgarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 6, "name": "Ganeshwar" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 7, "name": "Madho Niwas Kothi" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 8, "name": "Danta Ramgarh Fort" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 9, "name": "Raghunathji Mandir" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 10, "name": "Shri Digambar Jain Bada Mandir","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ],
+    "hotels": [
+      { "id": 1, "name": "Hotel Park Avenue" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 2, "name": "Hotel Fortune Blue" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 3, "name": "Hotel Lakhdatar" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 4, "name": "Hotel Royal Inn" ,"image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" },
+      { "id": 5, "name": "Hotel Shyam","image":"https://wallpapers.com/images/featured-full/beautiful-place-pictures-4z0hjwoi8rjhlk1p.jpg" }
+    ]
+  }
+]

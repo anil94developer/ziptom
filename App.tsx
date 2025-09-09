@@ -11,7 +11,11 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-
+import AppNavigator from './src/navigation/navigation';
+import { ThemeProvider } from './src/theme/ThemeContext';
+// import 'react-native-gesture-handler';
+// import { enableScreens } from 'react-native-screens';
+// enableScreens();
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -27,12 +31,11 @@ function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppNavigator />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
