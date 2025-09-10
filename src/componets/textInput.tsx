@@ -1,6 +1,7 @@
-import { useTheme } from '@react-navigation/native';
+ 
 import React from 'react';
 import { View, Text, TextInput as RNTextInput, TextInputProps, StyleSheet } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
 
 interface ITextInputProps extends TextInputProps {
     label?: string;
@@ -18,15 +19,17 @@ const AppTextInput: React.FC<ITextInputProps> = ({
     const { colors } = useTheme()
 
     return (
-        <View style={styles.container}>
-            {label && <Text style={[styles.label, { color: colors?.text }]}>{label}</Text>}
+        <View style={[styles.container,{backgroundColor:colors.background}]}>
+            {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
             <RNTextInput
                 //  textAlign='center'
+                placeholderTextColor={colors.text}
+                
                 style={[
                     styles.input,
-                    error ? styles.inputError : null,
-                    style,
-                    { color: colors?.text, fontSize: 16, backgroundColor: colors?.card }
+                    error ? styles.inputError : null, 
+                    { color: colors.text, fontSize: 16, backgroundColor: colors.surface,borderStyle: 'solid', borderColor: colors.border, borderWidth: 0  },
+
                 ]}
                 {...props}
 

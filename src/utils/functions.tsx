@@ -11,12 +11,15 @@ import { Routes } from '../navigation/routes';
 export const useAppNavigation = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
-  const goToHome = (params?: any) => {
-    navigation.navigate(Routes.Home, params);
+  const goToMainApp = (params?: any) => {
+    navigation.navigate(Routes.MainApp, params);
   };
 
   const goToLogin = (params?: any) => {
     navigation.navigate(Routes.Login, params);
+  };
+  const goToPersonalDetails = (params?: any) => {
+    navigation.navigate(Routes.PersonalDetails, params);
   };
 
   const goToRegister = (params?: any) => {
@@ -30,8 +33,9 @@ export const useAppNavigation = () => {
   // Add more navigation functions as needed
 
   return {
-    goToHome,
+    goToMainApp,
     goToLogin,
+    goToPersonalDetails,
     goToRegister,
     goToDetails,
     // Add more here

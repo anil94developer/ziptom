@@ -1,6 +1,7 @@
-export enum Routes {
-    Home = 'Home',
+export enum Routes { 
     Login = 'Login',
+    PersonalDetails='PersonalDetails',
+     MainApp = 'MainApp',
     Register = 'Register',
     Profile = 'Profile',
     Settings = 'Settings',

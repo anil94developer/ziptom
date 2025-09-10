@@ -7,12 +7,12 @@ import { useAppNavigation } from '../../utils/functions';
  
 
 const SplashScreen = ({ navigation }) => {
-    const { goToLogin } = useAppNavigation();
+    const { goToLogin , goToMainApp } = useAppNavigation();
 
   const { theme, colors, setTheme } = useTheme();
   useEffect(() => {
     const timer = setTimeout(() => {
-        goToLogin();
+        goToMainApp();
     }, 3000); // 300000 ms = 5 minutes
 
     return () => clearTimeout(timer);
