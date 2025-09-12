@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
-import place from './../../enums/place.json';
+import place from './../../../enums/place.json';
 
 const CityDetailsScreen = ({ route }) => {
   const { city } = route.params;

@@ -22,8 +22,8 @@ export const useAppNavigation = () => {
     navigation.navigate(Routes.PersonalDetails, params);
   };
 
-  const goToRegister = (params?: any) => {
-    navigation.navigate(Routes.Register, params);
+  const goToRestaurantDetails = (params?: any) => {
+    navigation.navigate(Routes.RestaurantDetails, params);
   };
 
   const goToDetails = (id: string | number, params?: any) => {
@@ -36,7 +36,7 @@ export const useAppNavigation = () => {
     goToMainApp,
     goToLogin,
     goToPersonalDetails,
-    goToRegister,
+    goToRestaurantDetails,
     goToDetails,
     // Add more here
   };

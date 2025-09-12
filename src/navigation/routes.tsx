@@ -2,7 +2,7 @@ export enum Routes {
     Login = 'Login',
     PersonalDetails='PersonalDetails',
      MainApp = 'MainApp',
-    Register = 'Register',
+    RestaurantDetails = 'RestaurantDetails',
     Profile = 'Profile',
     Settings = 'Settings',
     Dashboard = 'Dashboard',

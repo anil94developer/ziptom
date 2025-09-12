@@ -13,15 +13,14 @@ import {
 } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/navigation';
 import { ThemeProvider } from './src/theme/ThemeContext';
-// import 'react-native-gesture-handler';
-// import { enableScreens } from 'react-native-screens';
-// enableScreens();
+import 'react-native-gesture-handler';
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <StatusBar hidden={true} />
       <AppContent />
     </SafeAreaProvider>
   );

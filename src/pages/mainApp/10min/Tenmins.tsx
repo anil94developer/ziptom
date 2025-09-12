@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ScrollView, Dimensions } from 'react-native';
-import place from './../../enums/place.json';
+import place from '../../../enums/place.json';
 
 const { width } = Dimensions.get('window');
 
-const ExploreScreen = () => {
+const TenMins = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Explore Rajasthan</Text>
@@ -43,4 +43,4 @@ const styles = StyleSheet.create({
   cardText: { color: '#fff', fontSize: 13, textAlign: 'center' },
 });
 
-export default ExploreScreen;
+export default TenMins;

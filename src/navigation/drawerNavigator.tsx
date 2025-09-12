@@ -1,7 +1,7 @@
 // navigation/DrawerNavigator.tsx
 
 import React from 'react';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import  {createDrawerNavigator}  from '@react-navigation/drawer';
 import BottomTabs from './bottomTabs';
 import CityDetailsScreen from '../pages/home/CityDetailsScreen';
 import CustomDrawerContent from './customDrawerContent';
