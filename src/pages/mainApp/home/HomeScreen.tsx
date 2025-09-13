@@ -15,12 +15,18 @@ import ImageSlider from './ImageSlider';
 import RecommendedSection from './RecommendedSection';
 import { useAppNavigation } from '../../../utils/functions';
 import LocationSearch from '../locationSearch/LocationSearch';
+import { useCart } from '../../../context/cartProvider';
+import { useDispatch, useSelector } from 'react-redux';
+import { removeFromCart,addToCart } from '../../../redux/slices/cartSlice';
 const { width } = Dimensions.get('window');
 
 const CARD_WIDTH = 150;
 const HomeScreen = (props) => {
+   const dispatch = useDispatch();
+   const cartItems = useSelector((state: RootState) => state.cart.items);
+
     const { colors } = useTheme()
-    const { goToRestaurantDetails, goToProfile, goToSearchProduct } = useAppNavigation();
+    const { goToRestaurantDetails, goToProfile, goToSearchProduct,goToCartScreen } = useAppNavigation();
     const [selectedCity, setSelectedCity] = React.useState('Alwar');
     const selectedCityData = place.find(item => item.city === selectedCity);
     const [filterVisible, setFilterVisible] = React.useState(false);
@@ -56,18 +62,23 @@ const HomeScreen = (props) => {
                     {/* Header Section */}
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => {
-                           // goToLocationSearch()
-                           setSearchVisible(true)
+                            // goToLocationSearch()
+                            setSearchVisible(true)
                         }}>
                             <Text style={[styles.guestText, { color: colors.background }]}>Hello, Guest</Text>
                             <Text style={[styles.locationText, { color: colors.primary }]}>
                                 {selectedCity} ▼
                             </Text>
                         </TouchableOpacity>
-
-                        <TouchableOpacity onPress={()=>{goToProfile()}} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+                        <View style={styles.iconRow}>
+                        <TouchableOpacity onPress={() => { goToCartScreen() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+                            <MaterialIcons name="shopping-cart" size={24} color={colors.primary} />
+                            <Text style={{ position: 'absolute', top: -4, right: -4, backgroundColor: 'red', color: '#fff', fontSize: 10, paddingHorizontal: 4, borderRadius: 8 }}>{cartItems.length}</Text>
+                        </TouchableOpacity> 
+                        <TouchableOpacity onPress={() => { goToProfile() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
                             <MaterialIcons name="person" size={24} color={colors.primary} />
                         </TouchableOpacity>
+                        </View>
                     </View>
 
                     {/* Search & Weather Row */}
@@ -129,7 +140,7 @@ const HomeScreen = (props) => {
                                         <Image source={{ uri: item.image }} style={styles.image} />
 
                                         {/* Add Button */}
-                                        <TouchableOpacity style={styles.addButton}>
+                                        <TouchableOpacity style={styles.addButton} onPress={() => dispatch(addToCart({ id: item.id, name: item.title, price: item.price, quantity: 1 }))}>
                                             <MaterialIcons name="add" size={18} color="#00C853" />
                                         </TouchableOpacity>
                                         <View style={{ padding: 8 }}>
@@ -287,7 +298,7 @@ const HomeScreen = (props) => {
 
             <LocationSearch
                 visible={searchVisible}
-                onClose={() => setSearchVisible(false)} 
+                onClose={() => setSearchVisible(false)}
             />
 
         </View>

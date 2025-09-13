@@ -14,6 +14,9 @@ import {
 import AppNavigator from './src/navigation/navigation';
 import { ThemeProvider } from './src/theme/ThemeContext';
 import 'react-native-gesture-handler';
+import { CartProvider } from './src/context/cartProvider';
+import { Provider } from 'react-redux';
+import { store } from './src/redux/store';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -21,6 +24,7 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar hidden={true} />
+
       <AppContent />
     </SafeAreaProvider>
   );
@@ -32,7 +36,12 @@ function AppContent() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppNavigator />
+        <CartProvider>
+           <Provider store={store}>
+          <AppNavigator />
+          </Provider>
+        </CartProvider>
+
       </ThemeProvider>
     </SafeAreaProvider>
   );

@@ -50,6 +50,10 @@ export const useAppNavigation = () => {
     navigation.navigate(Routes.OrderTracking, params);
   }
 
+  const goToCartScreen = (params?: any) => {
+    navigation.navigate(Routes.CartScreen, params);
+  }
+
   const goToDetails = (id: string | number, params?: any) => {
     navigation.navigate(Routes.Dashboard, { id, ...params });
   };
@@ -67,7 +71,8 @@ export const useAppNavigation = () => {
     goToProfile,
     goToEditProfile,
     goToOrderDetails,
-    goToOrderTracking
+    goToOrderTracking,
+    goToCartScreen
     // Add more here
   };
 };

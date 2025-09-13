@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useAppNavigation } from "../../../utils/functions";
 export default function FoodCard({
     image,
     discount,
@@ -14,8 +15,9 @@ export default function FoodCard({
     cuisines,
     price
 }) {
+    const {goToRestaurantDetails} = useAppNavigation();
     return (
-        <TouchableOpacity style={styles.card} activeOpacity={0.9}>
+        <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={()=>{goToRestaurantDetails()}}>
             {/* Image + overlay badges */}
             <View style={styles.imageWrapper}>
                 <Image source={{ uri: image }} style={styles.image} />

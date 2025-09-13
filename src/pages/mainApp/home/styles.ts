@@ -221,5 +221,9 @@ export const styles = StyleSheet.create({
         borderRadius:20,
         marginRight:1, 
     },
-     
+     iconRow:{
+        flexDirection:'row',
+        alignItems:'center',
+        gap:10
+     }
 });
