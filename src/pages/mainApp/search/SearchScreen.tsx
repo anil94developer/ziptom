@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, Dimensions } from 'react-native';
-import place from './../../../enums/place.json';
+import place from '../../../enums/place.json';
 
 const { width } = Dimensions.get('window');
 

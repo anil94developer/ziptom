@@ -4,6 +4,7 @@ export const lightTheme = {
     background: '#FFFFFF',
     surface: '#F9F9F9',     // Cards, inputs, etc.
     text: '#222222',
+    textSecondary:'#555555',
     border: '#E0E0E0',
     link: '#FF6B00',
 
@@ -34,6 +35,7 @@ export const darkTheme = {
     background: '#121212',
     surface: '#1E1E1E',
     text: '#FFFFFF',
+    textSecondary:'#CCCCCC',
     border: '#333333',
     link: '#FF6B00',
 

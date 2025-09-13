@@ -21,6 +21,7 @@ const RestaurantDetails = () => {
     const navigation = useNavigation();
     const [cart, setCart] = useState({});
     const [menuVisible, setMenuVisible] = useState(false);
+    const [productVisible, setProductVisible] = useState(false);
 
     const addToCart = (item) => {
         setCart((prev) => ({
@@ -94,13 +95,14 @@ const RestaurantDetails = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#fff" }}>
-            <ScrollView style={styles.container}>
-                {/* Header */}
-                <Header
+             <Header
                     title="Harishankar Veg Restro"
                     onBack={() => navigation.goBack()}
                     onAdd={() => console.log("Add clicked!")}
                 />
+            <ScrollView style={styles.container}>
+                {/* Header */}
+               
 
                 {/* Restaurant Info */}
                 <View style={styles.header}>
@@ -148,7 +150,9 @@ const RestaurantDetails = () => {
                             renderItem={({ item }) => {
                                 const qty = cart[item.id] || 0;
                                 return (
-                                    <View style={styles.modalCard}>
+                                    <TouchableOpacity
+                                    onPress={() => setProductVisible(true)}
+                                    style={styles.modalCard}>
                                         <Image source={{ uri: item.image }} style={styles.modalImage} />
                                         <Text style={styles.modalFoodName} numberOfLines={1}>
                                             {item.title}
@@ -181,7 +185,7 @@ const RestaurantDetails = () => {
                                                 </View>
                                             )}
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 )
                             }}
                         />
@@ -195,6 +199,75 @@ const RestaurantDetails = () => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Product Modal */}
+           <Modal visible={productVisible} animationType="slide" transparent>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalBox}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Product Details</Text>
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={() => setProductVisible(false)}
+        >
+          <Text style={styles.closeText}>X</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Product Image */}
+        <Image
+          source={{ uri: foodItems[0].image }}
+          style={styles.detailImage}
+        />
+
+        {/* Product Info */}
+        <Text style={styles.detailName}>{foodItems[0].name}</Text>
+        <Text style={styles.detailPrice}>₹{foodItems[0].price}</Text>
+        <Text style={styles.detailDesc}>
+          {foodItems[0].desc ||
+            "This is a delicious dish prepared with fresh ingredients. Perfect for your cravings!"}
+        </Text>
+
+        {/* Rating */}
+        <View style={styles.ratingRow}>
+          <Text style={styles.ratingStar}>⭐</Text>
+          <Text style={styles.ratingValue}>4.3 (120 reviews)</Text>
+        </View>
+
+        {/* Add to Cart Controls */}
+        <View style={styles.cartRow}>
+          {0 === 0 ? (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => addToCart(foodItems[0])}
+            >
+              <Text style={styles.addText}>ADD +</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.qtyContainer}>
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => removeFromCart(foodItems[0])}
+              >
+                <Text style={styles.qtyText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.qtyCount}>{1}</Text>
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => addToCart(foodItems[0])}
+              >
+                <Text style={styles.qtyText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  </View>
+</Modal>
+
 
         </View>
     );
@@ -323,6 +396,40 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+
+
+    
+modalHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 10,
+}, 
+detailImage: {
+  width: "100%",
+  height: 200,
+  borderRadius: 12,
+  marginBottom: 12,
+},
+detailName: { fontSize: 20, fontWeight: "bold", color: "#222" },
+detailPrice: {
+  fontSize: 18,
+  color: "green",
+  fontWeight: "600",
+  marginVertical: 6,
+},
+detailDesc: { fontSize: 14, color: "#666", lineHeight: 20 },
+
+ratingRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+ratingStar: { fontSize: 18, color: "#FFD700" },
+ratingValue: { marginLeft: 4, fontSize: 14, color: "#333" },
+
+cartRow: {
+  marginTop: 15,
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  alignItems: "center",
+}, 
 
 });
 

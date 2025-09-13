@@ -2,12 +2,14 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../pages/mainApp/home/HomeScreen';
 import ExploreScreen from '../pages/mainApp/explore/ExploreScreen';
-import SearchScreen from '../pages/mainApp/search/SearchScreen';
+import SearchScreen from '../pages/mainApp/highProtien/HighProtien';
 import TenMins from '../pages/mainApp/10min/Tenmins';
-import ReOrderScreen from '../pages/mainApp/reorder/ReOrder';
+import ReOrderScreen from '../pages/mainApp/myOrder/MyOrder';
 import { useTheme } from '../theme/ThemeContext';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { View } from 'react-native';
+import HighProtien from '../pages/mainApp/highProtien/HighProtien';
+import MyOrderScreen from '../pages/mainApp/myOrder/MyOrder';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,9 +46,9 @@ const BottomTabs = () => {
                 name="ExploreTab"
                 component={ExploreScreen}
                 options={{
-                    tabBarLabel: 'Food',
+                    tabBarLabel: 'Near Me',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="restaurant" size={size} color={color} />
+                        <MaterialIcons name="map" size={size} color={color} />
                     ),
                 }}
             />
@@ -58,15 +60,15 @@ const BottomTabs = () => {
                     tabBarLabel: '10 mins',
                     tabBarIcon: ({ color, size }) => (
                         <View style={{ position: 'absolute', top: -40, backgroundColor: colors.primary, borderRadius: 360, padding: 6,width:60,height:60,justifyContent:'center',alignItems:'center' }}>
-                            <MaterialIcons name="timer" size={size} color={color} />
+                            <MaterialIcons name="timer" size={size} color={'#fff'} />
                         </View>
                     ),
                 }}
             />
 
             <Tab.Screen
-                name="SearchTab"
-                component={SearchScreen}
+                name="HighProtienTab"
+                component={HighProtien}
                 options={{
                     tabBarLabel: 'High Protein',
                     tabBarIcon: ({ color, size }) => (
@@ -77,12 +79,12 @@ const BottomTabs = () => {
             />
 
             <Tab.Screen
-                name="ReOrderScreenTabs"
-                component={ReOrderScreen}
+                name="MyOrderScreenTabs"
+                component={MyOrderScreen}
                 options={{
-                    tabBarLabel: 'Reorder',
+                    tabBarLabel: 'My Order',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="history" size={size} color={color} />
+                        <MaterialIcons name="list" size={size} color={color} />
                     ),
                 }}
             />

@@ -26,6 +26,30 @@ export const useAppNavigation = () => {
     navigation.navigate(Routes.RestaurantDetails, params);
   };
 
+  const goToLocationSearch = (params?: any) => {
+    navigation.navigate(Routes.LocationSearch, params);
+  }
+
+  const goToSearchProduct = (params?: any) => {
+    navigation.navigate(Routes.SearchProduct, params);
+  }
+
+  const goToProfile = (params?: any) => {
+    navigation.navigate(Routes.Profile, params);
+  };
+
+  const goToEditProfile = (params?: any) => {
+    navigation.navigate(Routes.EditProfile, params);
+  }
+
+  const goToOrderDetails = (params?: any) => {
+    navigation.navigate(Routes.OrderDetails, params);
+  }
+
+    const goToOrderTracking = (params?: any) => {
+    navigation.navigate(Routes.OrderTracking, params);
+  }
+
   const goToDetails = (id: string | number, params?: any) => {
     navigation.navigate(Routes.Dashboard, { id, ...params });
   };
@@ -38,6 +62,12 @@ export const useAppNavigation = () => {
     goToPersonalDetails,
     goToRestaurantDetails,
     goToDetails,
+    goToLocationSearch,
+    goToSearchProduct,
+    goToProfile,
+    goToEditProfile,
+    goToOrderDetails,
+    goToOrderTracking
     // Add more here
   };
 };

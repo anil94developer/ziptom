@@ -62,54 +62,42 @@ const dishes = [
   },
 ];
 
-const Tenmins = () => {
-  const { colors } = useTheme();
+const HighProtien = () => {
+  const {colors}=useTheme();
   const [selectedTab, setSelectedTab] = useState("15-30 GRAM");
   const [filterVisible, setFilterVisible] = useState(false);
 
   return (
     <ScrollView style={styles.container}>
       {/* Section Title */}
-      <Text style={styles.sectionTitle}>🔥 10 Mins Delivery</Text>
+      <Text style={styles.sectionTitle}>🍱 Protein loaded dishes</Text>
 
-
-
-
-      {/* Protein Source */}
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {proteinSources.map((src) => (
-          <View key={src.name} style={styles.proteinBox}>
-            <Image source={src.image} style={styles.proteinImage} />
-            <Text style={styles.proteinText}>{src.name}</Text>
-          </View>
+      {/* Tabs */}
+      <View style={styles.tabs}>
+        {proteinTabs.map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[
+              styles.tab,
+              selectedTab === tab && styles.activeTab,
+            ]}
+            onPress={() => setSelectedTab(tab)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                selectedTab === tab && styles.activeTabText,
+              ]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
         ))}
-      </ScrollView>
-
-      {/* Filter / Sort */}
-      <View style={styles.filterRow}>
-        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-          <MaterialIcons name="tune" size={18} color="#000" />
-          <Text style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Sort by</Text>
-          <MaterialIcons name="arrow-drop-down" size={18} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.boltBtn}>
-          <MaterialIcons name="bolt" size={16} color="orange" />
-          <Text style={styles.boltText}>Food in 10 mins</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Dish Cards */}
-      <FlatList
-        data={dishes}
-        numColumns={2}
-        keyExtractor={item => item.id.toString()}
-         style={{ backgroundColor: colors.surface,   paddingVertical: 10 }}
-        contentContainerStyle={{   }}
-        renderItem={({ item }) => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {dishes.map((item) => (
           <View key={item.id} style={styles.card}>
             <Image source={item.image} style={styles.cardImage} />
             <View style={styles.cardBadge}>
@@ -146,9 +134,70 @@ const Tenmins = () => {
               </View>
             </View>
           </View>
-        )}
-      />
+        ))}
+      </ScrollView>
 
+      {/* Protein Source */}
+      <Text style={styles.sectionTitle}>🎯 Choose your protein source</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {proteinSources.map((src) => (
+          <View key={src.name} style={styles.proteinBox}>
+            <Image source={src.image} style={styles.proteinImage} />
+            <Text style={styles.proteinText}>{src.name}</Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Filter / Sort */}
+      <View style={styles.filterRow}>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
+          <MaterialIcons name="tune" size={18} color="#000" />
+          <Text style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterBtn}>
+          <Text style={styles.filterText}>Sort by</Text>
+          <MaterialIcons name="arrow-drop-down" size={18} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.boltBtn}>
+          <MaterialIcons name="bolt" size={16} color="orange" />
+          <Text style={styles.boltText}>Food in 10 mins</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionTitle}>367 Restaurants to explore</Text>
+      <FlatList
+                          data={foodItems || []}
+                          showsHorizontalScrollIndicator={false}
+                          keyExtractor={item => item.id.toString()}
+                          style={{ backgroundColor: colors.surface, padding: 10, paddingBottom: 10 }}
+                          contentContainerStyle={{   }}
+                          renderItem={({ item }) => (
+                              <FoodCard
+                                  image="https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg"
+                                  discount="66% off upto ₹126"
+                                  time="20-25 MINS"
+                                  name="Faasos - Wraps, Rolls & Shawarma"
+                                  rating={4.3}
+                                  reviews={477}
+                                  location="Pratap Nagar"
+                                  distance="1.5 km"
+                                  cuisines="Kebabs, Fast Food"
+                                  price={200}
+                              />
+      
+                          )}
+                      />
+
+
+
+                      <FilterModal
+                                      visible={filterVisible}
+                                      onClose={() => setFilterVisible(false)}
+                                      onApply={(selectedSort) => {
+                                          console.log("Selected sort:", selectedSort);
+                                          setFilterVisible(false);
+                                      }}
+                                  />
     </ScrollView>
   );
 };
@@ -234,4 +283,4 @@ const styles = StyleSheet.create({
   boltText: { fontSize: 12, marginLeft: 5, fontWeight: "600", color: "orange" },
 });
 
-export default Tenmins;
+export default HighProtien;

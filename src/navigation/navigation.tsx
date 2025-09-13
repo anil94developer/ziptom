@@ -10,6 +10,12 @@ import PersonalDetails from '../pages/auth/personalDetails';
 import DrawerNavigator from './drawerNavigator';
 import BottomTabs from './bottomTabs';
 import RestaurantDetails from '../pages/mainApp/restaurantDetails/RestaurantDetails';
+// import LocationSearch from '../pages/mainApp/locationSearch/LocationSearch';
+import SearchProduct from '../pages/mainApp/searchProducts/SearchProduct';
+import Profile from '../pages/mainApp/profile/Profile';
+import EditProfile from '../pages/mainApp/profile/EditProfile';
+import OrderDetailsScreen from '../pages/mainApp/myOrder/OrderDetails';
+import OrderTrackingScreen from '../pages/mainApp/myOrder/OrderTrackingScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +29,15 @@ export default function AppNavigator() {
         <Stack.Screen name="PersonalDetails" component={PersonalDetails} />
         <Stack.Screen name="MainApp" component={BottomTabs} />
         <Stack.Screen name="RestaurantDetails" component={RestaurantDetails} />
+        {/* <Stack.Screen name="LocationSearch" component={LocationSearch} /> */}
+        <Stack.Screen name='SearchProduct' component={SearchProduct} />
+        <Stack.Screen name='Profile' component={Profile} />
+        <Stack.Screen name='EditProfile' component={EditProfile} />
+        <Stack.Screen name='OrderDetails' component={OrderDetailsScreen} />
+        <Stack.Screen name='OrderTracking' component={OrderTrackingScreen} />
+
+
+
 
       </Stack.Navigator>
     </NavigationContainer>

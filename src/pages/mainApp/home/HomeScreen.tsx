@@ -14,15 +14,17 @@ import FoodCard from './FoodCard';
 import ImageSlider from './ImageSlider';
 import RecommendedSection from './RecommendedSection';
 import { useAppNavigation } from '../../../utils/functions';
+import LocationSearch from '../locationSearch/LocationSearch';
 const { width } = Dimensions.get('window');
 
 const CARD_WIDTH = 150;
 const HomeScreen = (props) => {
     const { colors } = useTheme()
-    const { goToRestaurantDetails } = useAppNavigation();
+    const { goToRestaurantDetails, goToProfile, goToSearchProduct } = useAppNavigation();
     const [selectedCity, setSelectedCity] = React.useState('Alwar');
     const selectedCityData = place.find(item => item.city === selectedCity);
     const [filterVisible, setFilterVisible] = React.useState(false);
+    const [searchVisible, setSearchVisible] = React.useState(false)
     const [isVeg, setIsVeg] = useState(true);
 
     // Sections for FlatList
@@ -53,33 +55,38 @@ const HomeScreen = (props) => {
 
                     {/* Header Section */}
                     <View style={styles.header}>
-                        <View>
+                        <TouchableOpacity onPress={() => {
+                           // goToLocationSearch()
+                           setSearchVisible(true)
+                        }}>
                             <Text style={[styles.guestText, { color: colors.background }]}>Hello, Guest</Text>
                             <Text style={[styles.locationText, { color: colors.primary }]}>
                                 {selectedCity} ▼
                             </Text>
-                        </View>
+                        </TouchableOpacity>
 
-                        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+                        <TouchableOpacity onPress={()=>{goToProfile()}} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
                             <MaterialIcons name="person" size={24} color={colors.primary} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Search & Weather Row */}
                     <View style={styles.searchRow}>
-                        <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
-                            <TextInput
+                        <TouchableOpacity
+                            onPress={() => { goToSearchProduct() }}
+                            style={[styles.searchBox, { backgroundColor: colors.surface }]}>
+                            <Text
                                 style={[styles.searchInput, { color: colors.text }]}
-                                placeholder="Search something..."
-                                placeholderTextColor="#888"
-                            />
+                            // placeholder="Search something..."
+                            // placeholderTextColor="#888"
+                            >Search something...</Text>
                             <TouchableOpacity>
                                 <MaterialIcons name="search" size={20} color={colors.primary} />
                             </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
 
-                        <View style={[styles.weatherBox, { backgroundColor: colors.surface,   alignItems: 'center', paddingHorizontal: 15 }]}>
-                            <Text style={[styles.weatherText, { color: colors.text,  fontSize:8 }]}>
+                        <View style={[styles.weatherBox, { backgroundColor: colors.surface, alignItems: 'center', paddingHorizontal: 15 }]}>
+                            <Text style={[styles.weatherText, { color: colors.text, fontSize: 8 }]}>
                                 {isVeg ? 'VEG' : 'NON-VEG'}
                             </Text>
 
@@ -276,6 +283,11 @@ const HomeScreen = (props) => {
                     console.log("Selected sort:", selectedSort);
                     setFilterVisible(false);
                 }}
+            />
+
+            <LocationSearch
+                visible={searchVisible}
+                onClose={() => setSearchVisible(false)} 
             />
 
         </View>
