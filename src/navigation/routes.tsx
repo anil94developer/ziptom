@@ -8,6 +8,8 @@ export enum Routes {
     Profile = 'Profile',
     EditProfile="EditProfile",
     OrderDetails="OrderDetails",
+    OrderPlaceScreen="OrderPlaceScreen",
+
     OrderTracking="OrderTracking",
     CartScreen="CartScreen",
     Settings = 'Settings',

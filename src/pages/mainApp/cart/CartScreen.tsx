@@ -14,11 +14,12 @@ import Header from "../../../componets/header";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../redux/store"; // adjust path 
-import { updateQuantity,removeFromCart, addToCart } from "../../../redux/slices/cartSlice";
+import { updateQuantity, removeFromCart, addToCart } from "../../../redux/slices/cartSlice";
 import { foodItems } from "../../../enums/foods";
 
+
 const CartScreen = () => {
-    const { goToMainApp } = useAppNavigation();
+    const { goToMainApp, goToOrderPlacePage } = useAppNavigation();
     const navigation = useNavigation();
     const dispatch = useDispatch();
 
@@ -48,7 +49,7 @@ const CartScreen = () => {
                 {/* Restaurant Info */}
                 <View style={styles.restaurantHeader}>
                     <View style={{ marginLeft: 10 }}>
-                        <Text style={styles.restName}>The Madras Kitchen</Text>
+                        <Text style={styles.restName}>Cart Items</Text>
                         <Text style={styles.address}>Home • 64/66, Ganesh Udhhan</Text>
                     </View>
                 </View>
@@ -61,7 +62,8 @@ const CartScreen = () => {
                 {/* Cart Items */}
                 {cartItems.map((item) => (
                     <View key={item.id} style={styles.cartItem}>
-                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Image source={{ uri: item.image }} style={styles.cartImg} />
+                        <Text style={styles.itemName}>{item.name}sss</Text>
                         <View style={styles.counterRow}>
                             <TouchableOpacity
                                 style={styles.counterBtn}
@@ -87,14 +89,14 @@ const CartScreen = () => {
                         <MaterialIcons name="add" size={18} color="#333" />
                         <Text style={styles.actionText}>Add Items</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionBtn}>
+                    {/* <TouchableOpacity style={styles.actionBtn}>
                         <MaterialIcons name="list-alt" size={18} color="#333" />
                         <Text style={styles.actionText}>Cooking requests</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
                 {/* Suggestions */}
-                <Text style={styles.sectionTitle}>Complete your meal</Text>
+                {/* <Text style={styles.sectionTitle}>Complete your meal</Text>
                 <FlatList
                     horizontal
                     data={foodItems}
@@ -102,23 +104,24 @@ const CartScreen = () => {
                     renderItem={({ item }) => (
                         <View style={styles.suggestCard}>
                             <Image source={{ uri: item.image }} style={styles.suggestImg} />
+
                             <Text style={styles.suggestName}>{item.title}</Text>
                             <Text style={styles.suggestPrice}>₹{item.price}</Text>
-                            <TouchableOpacity style={styles.addBtn} onPress={()=>{dispatch(addToCart({...item,quantity:1}))}}>
+                            <TouchableOpacity style={styles.addBtn} onPress={() => { dispatch(addToCart({ ...item, quantity: 1 })) }}>
                                 <Text style={styles.addBtnText}>+</Text>
                             </TouchableOpacity>
                         </View>
                     )}
                     showsHorizontalScrollIndicator={false}
                     style={{ paddingLeft: 16 }}
-                />
+                /> */}
 
                 {/* Coupon Section */}
-                <TouchableOpacity style={styles.couponBox}>
+                {/* <TouchableOpacity style={styles.couponBox}>
                     <MaterialIcons name="local-offer" size={20} color="#ff554e" />
                     <Text style={styles.couponText}>Apply restaurant coupon</Text>
                     <MaterialIcons name="chevron-right" size={20} color="#555" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </ScrollView>
 
             {/* Bottom Payment */}
@@ -127,7 +130,7 @@ const CartScreen = () => {
                     <Text style={styles.payLabel}>Pay Using</Text>
                     <Text style={styles.payOption}>Pay on Delivery (Cash/UPI)</Text>
                 </View>
-                <TouchableOpacity style={styles.payBtn}>
+                <TouchableOpacity style={styles.payBtn} onPress={() => { goToOrderPlacePage() }}>
                     <Text style={styles.payText}>Pay ₹{total}</Text>
                 </TouchableOpacity>
             </View>
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderBottomWidth: 0.5,
         borderColor: "#eee",
+        gap:5
     },
     itemName: { fontSize: 15, color: "#000", flex: 1 },
     counterRow: {
@@ -186,6 +190,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     suggestImg: { width: 80, height: 60, borderRadius: 8, marginBottom: 6 },
+    cartImg:{width:50,height:50,borderRadius:10},
     suggestName: { fontSize: 13, fontWeight: "500", color: "#000", textAlign: "center" },
     suggestPrice: { fontSize: 12, color: "#555", marginTop: 2 },
     addBtn: {
@@ -212,7 +217,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 0.5,
         borderColor: "#ddd",
         padding: 16,
-        bottom:20,
+        bottom: 20,
         backgroundColor: "#fff",
     },
     payLabel: { fontSize: 12, color: "#888" },

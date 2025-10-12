@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, FlatList, Image, Dimensions, ImageBackground, Switch } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, FlatList, Image, Dimensions, ImageBackground, Switch, Platform, PermissionsAndroid } from 'react-native';
 import place from './../../../enums/place.json';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -8,7 +8,7 @@ import { ImageAssets } from '../../../assets/images';
 import LinearGradient from 'react-native-linear-gradient';
 import { foodItems } from '../../../enums/foods';
 import { styles } from './styles';
-import { category } from '../../../enums/category';
+// import { category } from '../../../enums/category';
 import FilterModal from './FilterModal';
 import FoodCard from './FoodCard';
 import ImageSlider from './ImageSlider';
@@ -17,21 +17,48 @@ import { useAppNavigation } from '../../../utils/functions';
 import LocationSearch from '../locationSearch/LocationSearch';
 import { useCart } from '../../../context/cartProvider';
 import { useDispatch, useSelector } from 'react-redux';
-import { removeFromCart,addToCart } from '../../../redux/slices/cartSlice';
+import { removeFromCart, addToCart, updateQuantity } from '../../../redux/slices/cartSlice';
+import { fetchCategories, fetchNineNineProducts, fetchRestaurants } from '../../../redux/slices/homeSlice';
+import { getCurrentLocation } from '../../../utils/permissionHelper';
+import Geolocation from "react-native-geolocation-service";
+import { PERMISSIONS } from 'react-native-permissions';
+
 const { width } = Dimensions.get('window');
 
 const CARD_WIDTH = 150;
 const HomeScreen = (props) => {
-   const dispatch = useDispatch();
-   const cartItems = useSelector((state: RootState) => state.cart.items);
+    const dispatch = useDispatch();
+    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const { products, categories, restaurants } = useSelector((state: any) => state.home);
+    const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
+
 
     const { colors } = useTheme()
-    const { goToRestaurantDetails, goToProfile, goToSearchProduct,goToCartScreen } = useAppNavigation();
+    const { goToRestaurantDetails, goToProfile, goToSearchProduct, goToCartScreen } = useAppNavigation();
     const [selectedCity, setSelectedCity] = React.useState('Alwar');
     const selectedCityData = place.find(item => item.city === selectedCity);
     const [filterVisible, setFilterVisible] = React.useState(false);
     const [searchVisible, setSearchVisible] = React.useState(false)
     const [isVeg, setIsVeg] = useState(true);
+
+    // helper to get current quantity for product
+    const getQuantity = (id) => {
+        const item = cartItems.find((i) => i.id === id);
+        return item ? item.quantity : 0;
+    };
+    useEffect(() => {
+        const getHomeData = async () => {
+            //  let res= await getCurrentLocation()
+            dispatch(fetchNineNineProducts());
+            dispatch(fetchCategories());
+            dispatch(fetchRestaurants());
+
+        }
+        getHomeData();
+
+        // dispatch(getCategories());
+    }, []);
+
 
     // Sections for FlatList
     const sections = [
@@ -65,19 +92,19 @@ const HomeScreen = (props) => {
                             // goToLocationSearch()
                             setSearchVisible(true)
                         }}>
-                            <Text style={[styles.guestText, { color: colors.background }]}>Hello, Guest</Text>
+                            <Text style={[styles.guestText, { color: colors.background }]}>Hello, {userDetails.name}</Text>
                             <Text style={[styles.locationText, { color: colors.primary }]}>
                                 {selectedCity} ▼
                             </Text>
                         </TouchableOpacity>
                         <View style={styles.iconRow}>
-                        <TouchableOpacity onPress={() => { goToCartScreen() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
-                            <MaterialIcons name="shopping-cart" size={24} color={colors.primary} />
-                            <Text style={{ position: 'absolute', top: -4, right: -4, backgroundColor: 'red', color: '#fff', fontSize: 10, paddingHorizontal: 4, borderRadius: 8 }}>{cartItems.length}</Text>
-                        </TouchableOpacity> 
-                        <TouchableOpacity onPress={() => { goToProfile() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
-                            <MaterialIcons name="person" size={24} color={colors.primary} />
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={() => { goToCartScreen() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+                                <MaterialIcons name="shopping-cart" size={24} color={colors.primary} />
+                                <Text style={{ position: 'absolute', top: -4, right: -4, backgroundColor: 'red', color: '#fff', fontSize: 10, paddingHorizontal: 4, borderRadius: 8 }}>{cartItems.length}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => { goToProfile() }} style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+                                <MaterialIcons name="person" size={24} color={colors.primary} />
+                            </TouchableOpacity>
                         </View>
                     </View>
 
@@ -130,37 +157,94 @@ const HomeScreen = (props) => {
                             <FlatList
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                data={foodItems}
-                                keyExtractor={(item) => item.id}
+                                data={products}
+                                keyExtractor={(item) => item._id}
                                 contentContainerStyle={{ paddingVertical: 10 }}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        onPress={() => { goToRestaurantDetails() }}
-                                        style={styles.cardItem}>
-                                        <Image source={{ uri: item.image }} style={styles.image} />
+                                renderItem={({ item }) => {
+                                    const quantity = getQuantity(item._id);
 
-                                        {/* Add Button */}
-                                        <TouchableOpacity style={styles.addButton} onPress={() => dispatch(addToCart({ id: item.id, name: item.title, price: item.price, quantity: 1 }))}>
-                                            <MaterialIcons name="add" size={18} color="#00C853" />
+                                    return (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                let restroDetails = {
+                                                    _id: item.restaurantId
+                                                }
+                                                console.log(restroDetails)
+                                               goToRestaurantDetails({restroDetails:restroDetails})
+                                            }}
+                                            style={styles.cardItem}
+                                        >
+                                            <Image source={{ uri: item.image }} style={styles.image} />
+
+                                            {/* ✅ Conditional UI */}
+                                            {quantity === 0 ? (
+                                                <TouchableOpacity
+                                                    style={styles.quantityContainer}
+                                                    onPress={() =>
+                                                        dispatch(
+                                                            addToCart({
+                                                                id: item._id,
+                                                                name: item.name,
+                                                                price: item.price,
+                                                                quantity: 1,
+                                                                image: item.image
+                                                            })
+                                                        )
+                                                    }
+                                                >
+                                                    <MaterialIcons name="add" size={18} color="#00C853" />
+                                                </TouchableOpacity>
+                                            ) : (
+                                                <View style={styles.quantityContainer}>
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            if (quantity > 1) {
+                                                                dispatch(
+                                                                    updateQuantity({ id: item._id, quantity: quantity - 1 })
+                                                                );
+                                                            } else {
+                                                                dispatch(removeFromCart({ id: item._id }));
+                                                            }
+                                                        }}
+                                                    >
+                                                        <MaterialIcons name="remove" size={18} color="#00C853" />
+                                                    </TouchableOpacity>
+
+                                                    <Text style={styles.quantityText}>{quantity}</Text>
+
+                                                    <TouchableOpacity
+                                                        onPress={() =>
+                                                            dispatch(
+                                                                updateQuantity({ id: item._id, quantity: quantity + 1 })
+                                                            )
+                                                        }
+                                                    >
+                                                        <MaterialIcons name="add" size={18} color="#00C853" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            )}
+
+                                            <View style={{ padding: 8 }}>
+                                                <Text style={styles.itemTitle} numberOfLines={1}>
+                                                    {item.name}
+                                                </Text>
+
+                                                <View style={styles.priceRow}>
+                                                    <Text style={styles.discounted}>₹{item.price}</Text>
+                                                    <Text style={styles.original}>₹{item.originalPrice}</Text>
+                                                </View>
+
+                                                <View style={styles.ratingRow}>
+                                                    <Text style={styles.ratingText}>⭐ 3 (2.2k)</Text>
+                                                </View>
+
+                                                <Text style={styles.restaurantName} numberOfLines={1}>
+                                                    {item.categoryId.name}
+                                                </Text>
+                                            </View>
                                         </TouchableOpacity>
-                                        <View style={{ padding: 8 }}>
-                                            <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
-
-                                            <View style={styles.priceRow}>
-                                                <Text style={styles.discounted}>₹{item.price}</Text>
-                                                <Text style={styles.original}>₹{item.originalPrice}</Text>
-                                            </View>
-
-                                            <View style={styles.ratingRow}>
-                                                <Text style={styles.ratingText}>⭐ {item.rating} ({item.ratingCount})</Text>
-                                            </View>
-
-                                            <Text style={styles.restaurantName} numberOfLines={1}>
-                                                {item.restaurant}
-                                            </Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                )}
+                                    );
+                                }}
                             />
                         </View>
                         <View style={styles.sectionHeader}>
@@ -175,7 +259,7 @@ const HomeScreen = (props) => {
                         <FlatList
                             style={{ backgroundColor: colors.surface, paddingTop: 30 }}
                             horizontal
-                            data={category}
+                            data={categories}
                             showsHorizontalScrollIndicator={false}
                             keyExtractor={item => item.title}
                             contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 8 }}
@@ -188,7 +272,7 @@ const HomeScreen = (props) => {
                                     <Text style={[
                                         { color: colors.text, fontSize: 12 },
                                     ]}>
-                                        {item.title}
+                                        {item.name}
                                     </Text>
                                 </TouchableOpacity>
                             )}
@@ -226,23 +310,24 @@ const HomeScreen = (props) => {
             //     )
             case "restaurants":
                 return (<FlatList
-                    data={foodItems || []}
+                    data={restaurants || []}
                     showsHorizontalScrollIndicator={false}
-                    keyExtractor={item => item.id.toString()}
+                    keyExtractor={item => item._id.toString()}
                     style={{ backgroundColor: colors.surface, padding: 10, paddingBottom: 10 }}
                     contentContainerStyle={{ paddingHorizontal: 10, }}
                     renderItem={({ item }) => (
                         <FoodCard
-                            image="https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg"
+                            image={item?.images[0]?.url}
                             discount="66% off upto ₹126"
                             time="20-25 MINS"
-                            name="Faasos - Wraps, Rolls & Shawarma"
-                            rating={4.3}
-                            reviews={477}
-                            location="Pratap Nagar"
+                            name={item.name}
+                            rating={item.rating.average}
+                            reviews={item.rating.count}
+                            location={item.location?.address}
                             distance="1.5 km"
-                            cuisines="Kebabs, Fast Food"
-                            price={200}
+                            cuisines={item?.cuisineType?.join(", ")}
+                            features={item?.features?.join(", ")}
+                            item={item}
                         />
 
                     )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, ActivityIndicator } from 'react-native';
 import AppTextInput from '../../componets/textInput';
 import { ImageAssets } from '../../assets/images';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -7,25 +7,59 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useTheme } from '../../theme/ThemeContext';
 import OTPTextInput from 'react-native-otp-textinput';
 import { useAppNavigation } from '../../utils/functions';
+import { useDispatch, useSelector } from 'react-redux';
+import { sendOtp, verifyOtp, setOtpSent } from '../../redux/slices/authSlice';
+import { showToast } from '../../redux/slices/toastSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const { colors } = useTheme();
   const { goToPersonalDetails } = useAppNavigation();
-  const [phone, setPhone] = useState('');
-  const [showOtpModal, setShowOtpModal] = useState(false);
+
+  const dispatch = useDispatch();
+  const { loading, error, otpSent, user } = useSelector((state: any) => state.auth);
+
+  const [phone, setPhone] = useState(''); 
   const [otp, setOtp] = useState('');
 
-  const handleContinue = () => {
-    // Here you can add phone validation and API call
-    setShowOtpModal(true);
+
+ const handleSendOtp = async () => {
+  const trimmedPhone = phone?.trim();
+  if (!trimmedPhone) {
+    dispatch(showToast({ message: "Phone number is required", type: "error" }));
+    return;
+  }
+
+  const phoneRegex = /^[0-9]{10}$/;
+  if (!phoneRegex.test(trimmedPhone)) {
+    dispatch(showToast({ message: "Invalid phone number", type: "error" }));
+    return;
+  }
+
+  try {
+    await dispatch(sendOtp(trimmedPhone)).unwrap();
+    dispatch(showToast({ message: "OTP sent successfully", type: "success" }));
+  } catch (err) {
+    dispatch(showToast({ message: "Failed to send OTP", type: "error" }));
+  }
+};
+
+
+ const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      return dispatch(showToast({ message: "OTP is required", type: "error" }));
+    }
+
+    try {
+      let result= await dispatch(verifyOtp({ phone, otp })).unwrap();
+      AsyncStorage.setItem("token",result.data.token)
+      dispatch(showToast({ message: "OTP verified successfully", type: "success" }));
+       goToPersonalDetails()
+    } catch (err) {
+      dispatch(showToast({ message: err || "Invalid OTP", type: "error" }));
+    }
   };
 
-  const handleVerifyOtp = () => {
-    // Add OTP verification logic here
-    setShowOtpModal(false);
-    goToPersonalDetails()
-    // navigation.navigate('Home'); // Example navigation after OTP
-  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -55,12 +89,16 @@ const LoginScreen = ({ navigation }) => {
             />
           </View>
           {/* Continue Button */}
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.primary }]}
-            onPress={handleContinue}
-          >
-            <MaterialIcons name="arrow-forward" size={24} color={colors.background} />
-          </TouchableOpacity>
+          {loading ?
+            <ActivityIndicator /> :
+
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary }]}
+              onPress={handleSendOtp}
+            >
+              <MaterialIcons name="arrow-forward" size={24} color={colors.background} />
+            </TouchableOpacity>
+          }
         </View>
 
         {/* OR Divider */}
@@ -89,10 +127,10 @@ const LoginScreen = ({ navigation }) => {
 
       {/* OTP Modal */}
       <Modal
-        visible={showOtpModal}
+        visible={otpSent}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowOtpModal(false)}
+        onRequestClose={() => dispatch({ type: 'CLOSE_OTP_MODAL' })}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
@@ -111,7 +149,7 @@ const LoginScreen = ({ navigation }) => {
             >
               <Text style={styles.buttonText}>Verify</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowOtpModal(false)} style={{ marginTop: 10 }}>
+            <TouchableOpacity onPress={() => dispatch(setOtpSent(false))} style={{ marginTop: 10 }}>
               <Text style={{ color: colors.primary, textAlign: 'center' }}>Cancel</Text>
             </TouchableOpacity>
           </View>

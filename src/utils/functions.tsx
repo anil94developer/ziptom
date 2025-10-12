@@ -25,6 +25,9 @@ export const useAppNavigation = () => {
   const goToRestaurantDetails = (params?: any) => {
     navigation.navigate(Routes.RestaurantDetails, params);
   };
+  const goToOrderPlacePage = (params?: any) => {
+    navigation.navigate(Routes.OrderPlaceScreen, params);
+  };
 
   const goToLocationSearch = (params?: any) => {
     navigation.navigate(Routes.LocationSearch, params);
@@ -72,7 +75,8 @@ export const useAppNavigation = () => {
     goToEditProfile,
     goToOrderDetails,
     goToOrderTracking,
-    goToCartScreen
+    goToCartScreen,
+    goToOrderPlacePage
     // Add more here
   };
 };

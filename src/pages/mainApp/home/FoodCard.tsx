@@ -13,11 +13,12 @@ export default function FoodCard({
     location,
     distance,
     cuisines,
-    price
+    features,
+    item
 }) {
     const {goToRestaurantDetails} = useAppNavigation();
     return (
-        <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={()=>{goToRestaurantDetails()}}>
+        <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={()=>{goToRestaurantDetails({restroDetails:item})}}>
             {/* Image + overlay badges */}
             <View style={styles.imageWrapper}>
                 <Image source={{ uri: image }} style={styles.image} />
@@ -51,7 +52,10 @@ export default function FoodCard({
 
                 {/* Cuisine + price */}
                 <Text style={styles.subText} numberOfLines={1}>
-                    {cuisines} • ₹{price} for two
+                    {cuisines} 
+                </Text>
+                <Text style={styles.subText} numberOfLines={1}>
+                      {features}
                 </Text>
             </View>
         </TouchableOpacity>

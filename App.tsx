@@ -30,15 +30,21 @@ function App() {
   );
 }
 
+import { REACT_APP_API_URL } from "@env";
+import CustomToast from './src/componets/customToast';
+import DraggableCartView from './src/componets/draggableCartView';
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
 
+  console.log("Base URL:", REACT_APP_API_URL);
   return (
     <SafeAreaProvider>
       <ThemeProvider>
         <CartProvider>
-           <Provider store={store}>
-          <AppNavigator />
+          <Provider store={store}>
+            <CustomToast/>
+            {/* <DraggableCartView />  */}
+            <AppNavigator />
           </Provider>
         </CartProvider>
 

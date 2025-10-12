@@ -6,13 +6,51 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppButton from '../../componets/appButton';
 import { useNavigation } from '@react-navigation/native';
 import { useAppNavigation } from '../../utils/functions';
+import { useDispatch, useSelector } from 'react-redux';
+import { showToast } from '../../redux/slices/toastSlice';
+import { prefernces, setUserDetails } from '../../redux/slices/authSlice';
 
 const PersonalDetails = ({ navigation }) => {
-    const {goToMainApp}= useAppNavigation();
+    const { goToMainApp } = useAppNavigation();
+
+    const dispatch = useDispatch();
+    const { loading, error, otpSent, user } = useSelector((state: any) => state.auth);
+
+
+
     const [name, setName] = useState('');
     const [diet, setDiet] = useState<'veg' | 'nonveg'>('veg');
     const [restaurantPref, setRestaurantPref] = useState<'all' | 'pureveg'>('all');
     const [whatsapp, setWhatsapp] = useState(false);
+
+    const handleSubmitPrefernces = async () => {
+        let preference = {
+            "obj1": diet,
+            "obj2": restaurantPref
+        }
+        const username = name?.trim();
+        if (!username) {
+            dispatch(showToast({ message: "Name is required", type: "error" }));
+            return;
+        }
+        console.log(username, preference)
+        let body={
+            name:username,
+            preference:preference
+        }
+        try {
+           let result= await dispatch(prefernces(body)).unwrap();
+           console.log(result)
+            dispatch(showToast({ message: "successfully", type: "success" }));
+            dispatch(setUserDetails(result.data))
+            if(result.status == 200){
+                goToMainApp()
+            }
+        } catch (err) {
+            dispatch(showToast({ message: "Failed to send request", type: "error" }));
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -106,8 +144,8 @@ const PersonalDetails = ({ navigation }) => {
             {/* Done Button */}
             <AppButton
                 label="Submit"
-                onPress={() => goToMainApp()}
-                error="Something went wrong"
+                onPress={() => handleSubmitPrefernces()}
+                error=""
             />
         </View>
     );

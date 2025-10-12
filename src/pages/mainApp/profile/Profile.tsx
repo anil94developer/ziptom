@@ -14,11 +14,16 @@ import { useNavigation } from "@react-navigation/native";
 import { useAppNavigation } from "../../../utils/functions";
 import { useTheme } from "../../../theme/ThemeContext";
 import { Portal, Dialog, Button, Provider as PaperProvider } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserDetails } from "../../../redux/slices/authSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = () => {
   const { colors, setTheme } = useTheme();
-  const { goToEditProfile } = useAppNavigation();
+  const { goToEditProfile, goToLogin } = useAppNavigation();
   const navigation = useNavigation();
+  const dispatch = useDispatch()
+  const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [vegMode, setVegMode] = useState(false);
@@ -30,14 +35,17 @@ const Profile = () => {
 
   const closeModal = () => setActiveModal(null);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setLogoutVisible(false);
     // 👉 Add your real logout logic here
     console.log("User Logged Out");
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" }], // redirect to login/auth screen
-    });
+    // navigation.reset({
+    //   index: 0,
+    //   routes: [{ name: "Login" }], // redirect to login/auth screen
+    // });
+    dispatch(setUserDetails({}))
+    AsyncStorage.clear()
+    goToLogin()
   };
 
   return (
@@ -52,7 +60,7 @@ const Profile = () => {
             <Text style={[styles.avatarText, { color: colors.text }]}>G</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.userName, { color: colors.text }]}>Gungun</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{userDetails.name}</Text>
             <TouchableOpacity>
               <Text style={[styles.activityText, { color: colors.primary }]}>
                 View activity
@@ -80,7 +88,7 @@ const Profile = () => {
               color={colors.textSecondary}
             />
             <Text style={[styles.boxText, { color: colors.text }]}>Wallet</Text>
-            <Text style={[styles.subText, { color: colors.textSecondary }]}>₹0</Text>
+            <Text style={[styles.subText, { color: colors.textSecondary }]}>₹ {userDetails.wallet}</Text>
           </View>
           <View style={[styles.box, { backgroundColor: colors.surface }]}>
             <MaterialIcons

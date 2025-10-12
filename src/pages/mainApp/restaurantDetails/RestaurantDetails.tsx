@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -14,55 +14,76 @@ import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { useTheme } from "../../../theme/ThemeContext";
 import { foodItems } from "../../../enums/foods";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllRestraurantProducts } from "./../../../redux/slices/restaurantSlice"
+import { removeFromCart, addToCart, updateQuantity } from '../../../redux/slices/cartSlice';
+
+const RestaurantDetails = ({ route }) => {
+    const { restroDetails } = route.params;
+    console.log("item details", restroDetails)
+
+    const dispatch = useDispatch();
+    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const { restaurantProducts } = useSelector((state: any) => state.restaurant);
+    const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
 
 
-const RestaurantDetails = () => {
+
     const { colors } = useTheme();
     const navigation = useNavigation();
     const [cart, setCart] = useState({});
     const [menuVisible, setMenuVisible] = useState(false);
     const [productVisible, setProductVisible] = useState(false);
 
-    const addToCart = (item) => {
-        setCart((prev) => ({
-            ...prev,
-            [item.id]: (prev[item.id] || 0) + 1,
-        }));
-    };
+    useEffect(() => {
+        const getData = async () => {
+            dispatch(fetchAllRestraurantProducts(restroDetails._id));
+        }
+        getData()
+    }, [dispatch,restroDetails._id])
 
-    const removeFromCart = (item) => {
-        setCart((prev) => {
-            const updated = { ...prev };
-            if (updated[item.id] > 1) {
-                updated[item.id] -= 1;
-            } else {
-                delete updated[item.id];
-            }
-            return updated;
-        });
+
+
+    // helper to get current quantity for product
+    const getQuantity = (id) => {
+        const item = cartItems.find((i) => i.id === id);
+        return item ? item.quantity : 0;
     };
 
     const renderItem = ({ item }) => {
-        const qty = cart[item.id] || 0;
+
+        const quantity = getQuantity(item._id);
+
         return (
             <View style={styles.card}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.foodName}>{item.title}</Text>
+                    <Text style={styles.foodName}>{item.name}</Text>
                     <Text style={styles.foodPrice}>₹{item.price}</Text>
                     <Text style={styles.foodDesc} numberOfLines={2}>
-                        {item.restaurant}
+                        {item.restaurantId.name}
                     </Text>
                     <Text style={styles.foodDesc} numberOfLines={2}>
-                        {item.ratingCount}
+                        {2}
                     </Text>
                 </View>
                 <View style={{ alignItems: "center" }}>
                     <Image source={{ uri: item.image }} style={styles.foodImage} />
 
-                    {qty === 0 ? (
+                    {quantity === 0 ? (
                         <TouchableOpacity
                             style={styles.addButton}
-                            onPress={() => addToCart(item)}
+                            onPress={() =>
+                                dispatch(
+                                    addToCart({
+                                        id: item._id,
+                                        name: item.name,
+                                        price: item.price,
+                                        quantity: 1,
+                                        image:item.image
+
+                                    })
+                                )
+                            }
                         >
                             <Text style={styles.addText}>ADD +</Text>
                         </TouchableOpacity>
@@ -70,14 +91,27 @@ const RestaurantDetails = () => {
                         <View style={styles.qtyContainer}>
                             <TouchableOpacity
                                 style={styles.qtyBtn}
-                                onPress={() => removeFromCart(item)}
+                                onPress={() => dispatch(
+                                    updateQuantity({ id: item._id, quantity: quantity + 1 })
+                                )}
                             >
                                 <Text style={styles.qtyText}>-</Text>
                             </TouchableOpacity>
-                            <Text style={styles.qtyCount}>{qty}</Text>
+                            <Text style={styles.qtyCount}>{quantity}</Text>
                             <TouchableOpacity
                                 style={styles.qtyBtn}
-                                onPress={() => addToCart(item)}
+                                onPress={() =>
+                                    dispatch(
+                                        addToCart({
+                                            id: item._id,
+                                            name: item.name,
+                                            price: item.price,
+                                            quantity: 1,
+                                            image:item.image
+
+                                        })
+                                    )
+                                }
                             >
                                 <Text style={styles.qtyText}>+</Text>
                             </TouchableOpacity>
@@ -88,37 +122,37 @@ const RestaurantDetails = () => {
         );
     };
 
-    const cartItems = Object.keys(cart).map((id) => {
-        const item = foodItems.find((f) => f.id === id);
-        return { ...item, qty: cart[id] };
-    });
+    // const cartItems = Object.keys(cart).map((id) => {
+    //     const item = foodItems.find((f) => f.id === id);
+    //     return { ...item, qty: cart[id] };
+    // });
 
     return (
         <View style={{ flex: 1, backgroundColor: "#fff" }}>
-             <Header
-                    title="Harishankar Veg Restro"
-                    onBack={() => navigation.goBack()}
-                    onAdd={() => console.log("Add clicked!")}
-                />
+            <Header
+                title={restroDetails?.name}
+                onBack={() => navigation.goBack()}
+                // onAdd={() => console.log("Add clicked!")}
+            />
             <ScrollView style={styles.container}>
                 {/* Header */}
-               
+
 
                 {/* Restaurant Info */}
                 <View style={styles.header}>
-                    <Text style={styles.restaurantName}>Harishankar Veg Restro</Text>
+                    <Text style={styles.restaurantName}>{restroDetails?.name}</Text>
                     <View style={styles.ratingBox}>
-                        <Text style={styles.ratingText}>4.1 ★</Text>
+                        <Text style={styles.ratingText}>{restroDetails?.rating?.average} ★</Text>
                     </View>
                 </View>
-                <Text style={styles.subText}>2.1 km • 20-25 mins • Sanganer</Text>
+                <Text style={styles.subText}>2.1 km • 20-25 mins • {restroDetails?.location?.address}</Text>
                 <Text style={styles.subText}>Frequently Reordered ✅</Text>
                 <Text style={styles.offer}>🚴 Free Delivery above ₹149</Text>
 
                 {/* Recommended */}
                 <Text style={styles.sectionTitle}>Recommended for you</Text>
                 <FlatList
-                    data={foodItems}
+                    data={restaurantProducts}
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
                 />
@@ -142,7 +176,7 @@ const RestaurantDetails = () => {
                         <Text style={styles.modalTitle}>Menu</Text>
 
                         <FlatList
-                            data={foodItems}
+                            data={restaurantProducts}
                             keyExtractor={(item) => item.id}
                             numColumns={2}
                             columnWrapperStyle={{ justifyContent: "space-between" }}
@@ -151,16 +185,18 @@ const RestaurantDetails = () => {
                                 const qty = cart[item.id] || 0;
                                 return (
                                     <TouchableOpacity
-                                    onPress={() => setProductVisible(true)}
-                                    style={styles.modalCard}>
+                                        onPress={() => setProductVisible(true)}
+                                        style={styles.modalCard}>
                                         <Image source={{ uri: item.image }} style={styles.modalImage} />
                                         <Text style={styles.modalFoodName} numberOfLines={1}>
-                                            {item.title}
+                                            {item.name}
                                         </Text>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
 
                                             <Text style={styles.modalFoodPrice}>₹{item.price}</Text>
-                                            {qty === 0 ? (
+                                            <Text style={styles.modalFoodPrice}>{item.type}</Text>
+
+                                            {/* {qty === 0 ? (
                                                 <TouchableOpacity
                                                     style={styles.addButton}
                                                     onPress={() => addToCart(item)}
@@ -183,7 +219,7 @@ const RestaurantDetails = () => {
                                                         <Text style={styles.qtyText}>+</Text>
                                                     </TouchableOpacity>
                                                 </View>
-                                            )}
+                                            )} */}
                                         </View>
                                     </TouchableOpacity>
                                 )
@@ -201,72 +237,72 @@ const RestaurantDetails = () => {
             </Modal>
 
             {/* Product Modal */}
-           <Modal visible={productVisible} animationType="slide" transparent>
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalBox}>
-      {/* Header */}
-      <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Product Details</Text>
-        <TouchableOpacity
-          style={styles.closeBtn}
-          onPress={() => setProductVisible(false)}
-        >
-          <Text style={styles.closeText}>X</Text>
-        </TouchableOpacity>
-      </View>
+            <Modal visible={productVisible} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalBox}>
+                        {/* Header */}
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Product Details</Text>
+                            <TouchableOpacity
+                                style={styles.closeBtn}
+                                onPress={() => setProductVisible(false)}
+                            >
+                                <Text style={styles.closeText}>X</Text>
+                            </TouchableOpacity>
+                        </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Product Image */}
-        <Image
-          source={{ uri: foodItems[0].image }}
-          style={styles.detailImage}
-        />
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            {/* Product Image */}
+                            <Image
+                                source={{ uri: foodItems[0].image }}
+                                style={styles.detailImage}
+                            />
 
-        {/* Product Info */}
-        <Text style={styles.detailName}>{foodItems[0].name}</Text>
-        <Text style={styles.detailPrice}>₹{foodItems[0].price}</Text>
-        <Text style={styles.detailDesc}>
-          {foodItems[0].desc ||
-            "This is a delicious dish prepared with fresh ingredients. Perfect for your cravings!"}
-        </Text>
+                            {/* Product Info */}
+                            <Text style={styles.detailName}>{foodItems[0].name}</Text>
+                            <Text style={styles.detailPrice}>₹{foodItems[0].price}</Text>
+                            <Text style={styles.detailDesc}>
+                                {foodItems[0].desc ||
+                                    "This is a delicious dish prepared with fresh ingredients. Perfect for your cravings!"}
+                            </Text>
 
-        {/* Rating */}
-        <View style={styles.ratingRow}>
-          <Text style={styles.ratingStar}>⭐</Text>
-          <Text style={styles.ratingValue}>4.3 (120 reviews)</Text>
-        </View>
+                            {/* Rating */}
+                            <View style={styles.ratingRow}>
+                                <Text style={styles.ratingStar}>⭐</Text>
+                                <Text style={styles.ratingValue}>4.3 (120 reviews)</Text>
+                            </View>
 
-        {/* Add to Cart Controls */}
-        <View style={styles.cartRow}>
-          {0 === 0 ? (
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => addToCart(foodItems[0])}
-            >
-              <Text style={styles.addText}>ADD +</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.qtyContainer}>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => removeFromCart(foodItems[0])}
-              >
-                <Text style={styles.qtyText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.qtyCount}>{1}</Text>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => addToCart(foodItems[0])}
-              >
-                <Text style={styles.qtyText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </View>
-  </View>
-</Modal>
+                            {/* Add to Cart Controls */}
+                            <View style={styles.cartRow}>
+                                {0 === 0 ? (
+                                    <TouchableOpacity
+                                        style={styles.addButton}
+                                        onPress={() => addToCart(foodItems[0])}
+                                    >
+                                        <Text style={styles.addText}>ADD +</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <View style={styles.qtyContainer}>
+                                        <TouchableOpacity
+                                            style={styles.qtyBtn}
+                                            onPress={() => removeFromCart(foodItems[0])}
+                                        >
+                                            <Text style={styles.qtyText}>-</Text>
+                                        </TouchableOpacity>
+                                        <Text style={styles.qtyCount}>{1}</Text>
+                                        <TouchableOpacity
+                                            style={styles.qtyBtn}
+                                            onPress={() => addToCart(foodItems[0])}
+                                        >
+                                            <Text style={styles.qtyText}>+</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
 
 
         </View>
@@ -398,38 +434,38 @@ const styles = StyleSheet.create({
     },
 
 
-    
-modalHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 10,
-}, 
-detailImage: {
-  width: "100%",
-  height: 200,
-  borderRadius: 12,
-  marginBottom: 12,
-},
-detailName: { fontSize: 20, fontWeight: "bold", color: "#222" },
-detailPrice: {
-  fontSize: 18,
-  color: "green",
-  fontWeight: "600",
-  marginVertical: 6,
-},
-detailDesc: { fontSize: 14, color: "#666", lineHeight: 20 },
 
-ratingRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
-ratingStar: { fontSize: 18, color: "#FFD700" },
-ratingValue: { marginLeft: 4, fontSize: 14, color: "#333" },
+    modalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    detailImage: {
+        width: "100%",
+        height: 200,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
+    detailName: { fontSize: 20, fontWeight: "bold", color: "#222" },
+    detailPrice: {
+        fontSize: 18,
+        color: "green",
+        fontWeight: "600",
+        marginVertical: 6,
+    },
+    detailDesc: { fontSize: 14, color: "#666", lineHeight: 20 },
 
-cartRow: {
-  marginTop: 15,
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  alignItems: "center",
-}, 
+    ratingRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+    ratingStar: { fontSize: 18, color: "#FFD700" },
+    ratingValue: { marginLeft: 4, fontSize: 14, color: "#333" },
+
+    cartRow: {
+        marginTop: 15,
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        alignItems: "center",
+    },
 
 });
 

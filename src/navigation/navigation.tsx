@@ -17,6 +17,7 @@ import EditProfile from '../pages/mainApp/profile/EditProfile';
 import OrderDetailsScreen from '../pages/mainApp/myOrder/OrderDetails';
 import OrderTrackingScreen from '../pages/mainApp/myOrder/OrderTrackingScreen';
 import CartScreen from '../pages/mainApp/cart/CartScreen';
+import OrderPlaceScreen from '../pages/mainApp/orderPlaceScreen/orderPlaceScreen';
 
 const Stack = createStackNavigator();
 
@@ -30,7 +31,7 @@ export default function AppNavigator() {
         <Stack.Screen name="PersonalDetails" component={PersonalDetails} />
         <Stack.Screen name="MainApp" component={BottomTabs} />
         <Stack.Screen name="RestaurantDetails" component={RestaurantDetails} />
-        {/* <Stack.Screen name="LocationSearch" component={LocationSearch} /> */}
+        <Stack.Screen name="OrderPlaceScreen" component={OrderPlaceScreen} />
         <Stack.Screen name='SearchProduct' component={SearchProduct} />
         <Stack.Screen name='Profile' component={Profile} />
         <Stack.Screen name='EditProfile' component={EditProfile} />

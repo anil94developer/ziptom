@@ -225,5 +225,22 @@ export const styles = StyleSheet.create({
         flexDirection:'row',
         alignItems:'center',
         gap:10
-     }
+     },
+     quantityContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: "#00C853", 
+        right: 1,
+        alignSelf: "flex-end",   
+      },
+      
+      quantityText: {
+        fontSize: 14,
+        fontWeight: "bold",
+        color: "#00C853",
+      },
 });
