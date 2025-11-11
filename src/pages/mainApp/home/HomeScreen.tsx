@@ -22,6 +22,7 @@ import { fetchCategories, fetchNineNineProducts, fetchRestaurants } from '../../
 import { getCurrentLocation } from '../../../utils/permissionHelper';
 import Geolocation from "react-native-geolocation-service";
 import { PERMISSIONS } from 'react-native-permissions';
+import { getCoupons } from '../../../redux/slices/couponsSlice';
 
 const { width } = Dimensions.get('window');
 
@@ -48,10 +49,11 @@ const HomeScreen = (props) => {
     };
     useEffect(() => {
         const getHomeData = async () => {
-            //  let res= await getCurrentLocation()
+             let res= await getCurrentLocation()
             dispatch(fetchNineNineProducts());
             dispatch(fetchCategories());
             dispatch(fetchRestaurants());
+            dispatch(getCoupons())
 
         }
         getHomeData();

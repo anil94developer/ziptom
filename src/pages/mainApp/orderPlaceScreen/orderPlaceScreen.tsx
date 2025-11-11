@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -9,39 +9,43 @@ import {
     TextInput,
     ScrollView,
     Alert,
-    Image
+    Image,
+    ActivityIndicator
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../../componets/header";
 import { useNavigation } from "@react-navigation/native";
-import { useTheme } from "../../../theme/ThemeContext"; 
+import { useTheme } from "../../../theme/ThemeContext";
 import { createOrder } from "../../../redux/slices/orderSlice";
+import { addAddress, getAddress } from "../../../redux/slices/addressSlice";
+import { showToast } from "../../../redux/slices/toastSlice";
+
 
 const OrderPlaceScreen = () => {
-    const { colors, spacing, fontSizes } = useTheme();
-    const dispatch = useDispatch()
+    const { colors } = useTheme();
+    const dispatch = useDispatch();
     const navigation = useNavigation();
 
     // 🏠 Delivery Addresses
-    const [addresses, setAddresses] = useState([
-        {
-            id: "1",
-            label: "Home",
-            address: "123 Main Street",
-            city: "Delhi",
-            country: "India",
-            landmark: "Near Metro Station",
-        },
-        {
-            id: "2",
-            label: "Office",
-            address: "Tech Park, Sector 62",
-            city: "Noida",
-            country: "India",
-            landmark: "Opp. IT Tower",
-        },
-    ]);
-    const [selectedAddress, setSelectedAddress] = useState("1");
+    // const [addresses, setAddresses] = useState([
+    //     {
+    //         id: "1",
+    //         label: "Home",
+    //         address: "123 Main Street",
+    //         city: "Delhi",
+    //         country: "India",
+    //         landmark: "Near Metro Station",
+    //     },
+    //     {
+    //         id: "2",
+    //         label: "Office",
+    //         address: "Tech Park, Sector 62",
+    //         city: "Noida",
+    //         country: "India",
+    //         landmark: "Opp. IT Tower",
+    //     },
+    // ]);
+    const [selectedAddress, setSelectedAddress] = useState("");
 
     // ➕ Add Address Modal
     const [isModalVisible, setModalVisible] = useState(false);
@@ -58,9 +62,19 @@ const OrderPlaceScreen = () => {
     const [discount, setDiscount] = useState(0);
 
     // 🛒 Cart Data (Redux)
-    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const cartItems = useSelector((state: RootState) => state?.cart?.items);
+    const addresses = useSelector((state: RootState) => state?.address?.addresses);
+    const loading = useSelector((state: RootState) => state?.address?.loading);
 
 
+
+
+    useEffect(() => {
+        const getAddressFetch = async () => {
+            dispatch(getAddress())
+        }
+        getAddressFetch()
+    }, [dispatch])
     // 💰 Price Calculations
     const productTotal = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
@@ -82,34 +96,45 @@ const OrderPlaceScreen = () => {
     };
 
     // ➕ Add New Address
-    const handleAddAddress = () => {
+    const handleAddAddress = async () => {
+
         if (
             newAddress.label &&
             newAddress.address &&
             newAddress.city &&
             newAddress.country
         ) {
-            setAddresses((prev) => [
-                ...prev,
-                { id: Date.now().toString(), ...newAddress },
-            ]);
-            setNewAddress({
-                label: "",
-                address: "",
-                city: "",
-                country: "",
-                landmark: "",
-            });
-            setModalVisible(false);
+            // console.log(newAddress) 
+            try {
+                await dispatch(addAddress(newAddress)).unwrap();
+                dispatch(showToast({ message: "Address successfully", type: "success" }));
+                setNewAddress({
+                    label: "",
+                    address: "",
+                    city: "",
+                    country: "",
+                    landmark: "",
+                });
+                setModalVisible(false);
+            } catch (err) {
+                dispatch(showToast({ message: "Failed to Address", type: "error" }));
+            }
+            //  let result= await dispatch(addAddress(newAddress))
+
+            // setAddresses((prev) => [
+            //     ...prev,
+            //     { id: Date.now().toString(), ...newAddress },
+            // ]);
+
         } else {
             Alert.alert("⚠️ Error", "Please fill all required fields");
         }
     };
 
     // 🧾 Place Order
-    const handlePlaceOrder = async() => {
-        const address = addresses.find((a) => a.id === selectedAddress);
-        let orderData= {
+    const handlePlaceOrder = async () => {
+        const address = addresses?.find((a) => a.id === selectedAddress);
+        let orderData = {
             payment_method: "Online",
             coupon_code: couponCode,
             delivery_charges: deliveryCharge,
@@ -117,9 +142,15 @@ const OrderPlaceScreen = () => {
             total_amount: totalAmount,
             address_id: address,
             items: cartItems
-          }
-          console.log(orderData)
-        dispatch(await createOrder(orderData))
+        }
+        console.log(orderData)
+        try {
+            await dispatch(createOrder(orderData)).unwrap();
+            dispatch(showToast({ message: "Order Create successfully", type: "success" }));
+            
+        } catch (err) {
+            dispatch(showToast({ message: "Failed to Order Create", type: "error" }));
+        }
         // Alert.alert(
         //     "Order Placed 🎉",
         //     `Your order will be delivered to:\n${address.label}\n${address.address}, ${address.city}, ${address.country}\n${address.landmark}`
@@ -139,7 +170,7 @@ const OrderPlaceScreen = () => {
                 <FlatList
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    data={addresses}
+                    data={addresses || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <TouchableOpacity
@@ -193,10 +224,10 @@ const OrderPlaceScreen = () => {
                 {cartItems.length > 0 ? (
                     cartItems.map((item) => (
                         <View
-                            style={[styles.cartItem, { backgroundColor: colors.surface ,gap:10}]}
+                            style={[styles.cartItem, { backgroundColor: colors.surface, gap: 10 }]}
                             key={item.id}
                         >
-                          <Image source={{ uri: item.image }} style={styles.img} /> 
+                            <Image source={{ uri: item.image }} style={styles.img} />
                             <Text style={[styles.itemTitle, { color: colors.text }]}>
                                 {item.name}
                             </Text>
@@ -314,15 +345,18 @@ const OrderPlaceScreen = () => {
                                 }
                             />
                         ))}
+                        {loading ?
 
-                        <TouchableOpacity
-                            style={[styles.modalAddBtn, { backgroundColor: colors.primary }]}
-                            onPress={handleAddAddress}
-                        >
-                            <Text style={[styles.modalAddText, { color: colors.background }]}>
-                                Save Address
-                            </Text>
-                        </TouchableOpacity>
+                            <ActivityIndicator /> :
+                            <TouchableOpacity
+                                style={[styles.modalAddBtn, { backgroundColor: colors.primary }]}
+                                onPress={handleAddAddress}
+                            >
+                                <Text style={[styles.modalAddText, { color: colors.background }]}>
+                                    Save Address
+                                </Text>
+                            </TouchableOpacity>
+                        }
 
                         <TouchableOpacity
                             onPress={() => setModalVisible(false)}
@@ -368,7 +402,7 @@ const styles = StyleSheet.create({
     img: {
         height: 50,
         width: 50,
-        borderRadius:10
+        borderRadius: 10
     },
     addAddressText: { fontSize: 14, fontWeight: "500" },
     cartItem: {

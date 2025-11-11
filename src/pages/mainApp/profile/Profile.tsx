@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { useAppNavigation } from "../../../utils/functions";
 import { useTheme } from "../../../theme/ThemeContext";
 import { Portal, Dialog, Button, Provider as PaperProvider } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserDetails } from "../../../redux/slices/authSlice";
+import { profile, setUserDetails } from "../../../redux/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = () => {
@@ -48,6 +48,10 @@ const Profile = () => {
     goToLogin()
   };
 
+  useEffect(()=>{
+      dispatch(profile())
+  },[dispatch])
+
   return (
     <PaperProvider>
       <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -57,7 +61,7 @@ const Profile = () => {
         {/* User Info */}
         <View style={[styles.userCard, { backgroundColor: colors.surface }]}>
           <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-            <Text style={[styles.avatarText, { color: colors.text }]}>G</Text>
+            <Text style={[styles.avatarText, { color: colors.text }]}>{userDetails?.name?.charAt(0)?.toUpperCase()}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.userName, { color: colors.text }]}>{userDetails.name}</Text>
@@ -74,7 +78,7 @@ const Profile = () => {
           style={[styles.goldCard, { backgroundColor: colors.primary }]}
         >
           <Text style={[styles.goldText, { color: colors.onPrimary }]}>
-            🌟 Join Foodie Gold
+            🌟 Ziptom Enjoy
           </Text>
           <MaterialIcons name="chevron-right" size={24} color={colors.onPrimary} />
         </TouchableOpacity>
@@ -88,9 +92,9 @@ const Profile = () => {
               color={colors.textSecondary}
             />
             <Text style={[styles.boxText, { color: colors.text }]}>Wallet</Text>
-            <Text style={[styles.subText, { color: colors.textSecondary }]}>₹ {userDetails.wallet}</Text>
+            <Text style={[styles.subText, { color: colors.textSecondary }]}>₹ {userDetails?.wallet}</Text>
           </View>
-          <View style={[styles.box, { backgroundColor: colors.surface }]}>
+          {/* <View style={[styles.box, { backgroundColor: colors.surface }]}>
             <MaterialIcons
               name="local-offer"
               size={24}
@@ -100,7 +104,7 @@ const Profile = () => {
             <Text style={[styles.subText, { color: colors.textSecondary }]}>
               2 Available
             </Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Options */}
@@ -156,7 +160,7 @@ const Profile = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.menuItem, { borderColor: colors.border }]}
             onPress={() => setActiveModal("rating")}
           >
@@ -164,9 +168,9 @@ const Profile = () => {
               Your Rating
             </Text>
             <Text style={[styles.subText, { color: colors.textSecondary }]}>
-              {rating ? `${rating} ★` : "-- ★"}
+              {userDetails?.rating ? `${userDetails?.rating} ★` : "-- ★"}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Logout Button */}

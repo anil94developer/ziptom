@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { ENDPOINTS } from "../../api/endPoint";
+import api from "../../api/axiosConfig";
 
 interface OrderItem {
   id: number; // product ID
@@ -32,7 +33,7 @@ export const createOrder = createAsyncThunk(
     items: number[];
   }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${ENDPOINTS.CREATE_ORDER}`, orderData);
+      const response = await api.post(`${ENDPOINTS.CREATE_ORDER}`, orderData);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Something went wrong");

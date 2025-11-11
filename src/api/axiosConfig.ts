@@ -14,7 +14,7 @@ api.interceptors.request.use(
   async (config) => {
     // Example: attach token from Redux or AsyncStorage
     const token =await AsyncStorage.getItem("token");
-    console.log(JSON.stringify(token))
+    // console.log(JSON.stringify(token))
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

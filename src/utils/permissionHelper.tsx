@@ -1,4 +1,4 @@
-import { PermissionsAndroid, Platform, Alert } from "react-native";
+import { PermissionsAndroid, Platform, Alert, Linking } from "react-native";
 import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import Geolocation from "react-native-geolocation-service";
 export const requestAppPermission = async (type) => {
@@ -25,12 +25,12 @@ export const requestAppPermission = async (type) => {
               : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
           : PERMISSIONS.IOS.PHOTO_LIBRARY;
       break;
-    case "storage":
-      permission =
-        Platform.OS === "android"
-          ? PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
-          : PERMISSIONS.IOS.MEDIA_LIBRARY;
-      break;
+    // case "storage":
+    //   permission =
+    //     Platform.OS === "android"
+    //       ? PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
+    //       : PERMISSIONS.IOS.MEDIA_LIBRARY;
+    //   break;
     case "notification":
       permission =
         Platform.OS === "android"
@@ -47,9 +47,17 @@ export const requestAppPermission = async (type) => {
 
     if (result === RESULTS.BLOCKED) {
       Alert.alert(
-        "Permission Blocked",
-        `Please enable ${type} permission from app settings.`
-      );
+  "Permission Blocked",
+  `Please enable ${type} permission from app settings.`,
+  [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Open Settings",
+      onPress: () => Linking.openSettings(),
+    },
+  ]
+);
+
     }
     return false;
   } catch (error) {
@@ -90,24 +98,24 @@ export const getCurrentLocation = async () => {
 
     console.log("📡 Getting current position...");
 
-    return new Promise((resolve, reject) => {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("📍 Current Location:", latitude, longitude);
-          resolve({ latitude, longitude });
-        },
-        (error) => {
-          console.log("❌ Geolocation error:", error);
-          reject(error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 10000,
-        }
-      );
-    });
+    // return new Promise((resolve, reject) => {
+    //   Geolocation.getCurrentPosition(
+    //     (position) => {
+    //       const { latitude, longitude } = position.coords;
+    //       console.log("📍 Current Location:", latitude, longitude);
+    //       resolve({ latitude, longitude });
+    //     },
+    //     (error) => {
+    //       console.log("❌ Geolocation error:", error);
+    //       reject(error);
+    //     },
+    //     {
+    //       enableHighAccuracy: true,
+    //       timeout: 15000,
+    //       maximumAge: 10000,
+    //     }
+    //   );
+    // });
   } catch (error) {
     console.log("⚠️ Unexpected error:", error);
     return null;

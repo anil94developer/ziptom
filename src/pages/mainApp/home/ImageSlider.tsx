@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, FlatList, Image, StyleSheet, Dimensions } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const { width } = Dimensions.get("window");
 
@@ -15,7 +16,9 @@ const images = [
 export default function ImageSlider() {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
-
+  const dispatch = useDispatch();
+    const {coupons} = useSelector((state: RootState) => state.coupon);
+  
   const onScroll = (event) => {
     const slide = Math.round(event.nativeEvent.contentOffset.x / width);
     setActiveIndex(slide);
@@ -26,14 +29,14 @@ export default function ImageSlider() {
       {/* Slider */}
       <FlatList
         ref={flatListRef}
-        data={images}
+        data={coupons}
         keyExtractor={(_, index) => index.toString()}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
         renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.image} />
+          <Image source={{ uri: item.image }} style={styles.image} />
         )}
       />
 

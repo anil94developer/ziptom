@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,37 +11,42 @@ import {
 } from "react-native";
 import MapView, { Marker, Callout, PROVIDER_GOOGLE } from "react-native-maps";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllRestraurantProducts, fetchNearByRestraurant } from "../../../redux/slices/restaurantSlice";
+ const { width, height } = Dimensions.get("window");
 
-const { width, height } = Dimensions.get("window");
-
-const restaurants = [
-  {
-    id: 1,
-    name: "Biryani House",
-    lat: 28.6139,
-    lng: 77.209,
-    rating: 4.2,
-    image: "https://img.freepik.com/free-photo/chicken-biryani.jpg",
-  },
-  {
-    id: 2,
-    name: "Pizza Hub",
-    lat: 28.6145,
-    lng: 77.207,
-    rating: 4.5,
-    image: "https://img.freepik.com/free-photo/delicious-pizza.jpg",
-  },
-  {
-    id: 3,
-    name: "Burger Corner",
-    lat: 28.615,
-    lng: 77.212,
-    rating: 3.9,
-    image: "https://img.freepik.com/free-photo/tasty-burger.jpg",
-  },
-];
+// const restaurants = [
+//   {
+//     id: 1,
+//     name: "Biryani House",
+//     lat: 28.6139,
+//     lng: 77.209,
+//     rating: 4.2,
+//     image: "https://img.freepik.com/free-photo/chicken-biryani.jpg",
+//   },
+//   {
+//     id: 2,
+//     name: "Pizza Hub",
+//     lat: 28.6145,
+//     lng: 77.207,
+//     rating: 4.5,
+//     image: "https://img.freepik.com/free-photo/delicious-pizza.jpg",
+//   },
+//   {
+//     id: 3,
+//     name: "Burger Corner",
+//     lat: 28.615,
+//     lng: 77.212,
+//     rating: 3.9,
+//     image: "https://img.freepik.com/free-photo/tasty-burger.jpg",
+//   },
+// ];
 
 const ExploreScreen = () => {
+
+  const {  nearByRestuarant } = useSelector((state: any) => state.restaurants);
+  const dispatch = useDispatch();
+
   const [region, setRegion] = useState({
     latitude: 28.6139,
     longitude: 77.209,
@@ -51,6 +56,19 @@ const ExploreScreen = () => {
 
   const mapRef = useRef<MapView>(null);
 
+  useEffect(()=>{
+    const getData=()=>{
+      let body={
+        lat:region.latitude,
+        lng:region.longitude,
+        raduis:2000
+      }
+      dispatch(fetchNearByRestraurant(body))
+
+      
+    }
+    getData()
+  },[])
   const goToRestaurant = (rest: any) => {
     mapRef.current?.animateToRegion(
       {
@@ -86,7 +104,7 @@ const ExploreScreen = () => {
         region={region}
         onRegionChangeComplete={(reg) => setRegion(reg)}
       >
-        {restaurants.map((rest) => (
+        {nearByRestuarant.map((rest) => (
           <Marker
             key={rest.id}
             coordinate={{ latitude: rest.lat, longitude: rest.lng }}
@@ -126,10 +144,10 @@ const ExploreScreen = () => {
       {/* Bottom List */}
       <View style={styles.bottomList}>
         <FlatList
-          data={restaurants}
+          data={nearByRestuarant}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item._id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}

@@ -57,6 +57,21 @@ export const fetchAllRestraurantProducts = createAsyncThunk(
     }
   }
 );
+export const fetchNearByRestraurant = createAsyncThunk(
+  "restaurants/fetchNearByRestraurant",
+  async (body:any, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(ENDPOINTS.NEAR_BY_RESTUARANT,{ "latitude":"33.34",
+    "longitude":"12.45",
+    "raduis":2000});
+      console.log("Fetched restaurants:", data);
+      return data?.data || data;
+    } catch (error: any) {
+      console.error("Error fetching restaurants:", error);
+      return rejectWithValue(error.response?.data?.message || "Failed to load restaurants");
+    }
+  }
+);
 
 
 // --------------------
@@ -67,12 +82,14 @@ interface ProductState {
   loading: boolean;
   error: string | null;
   restaurantProducts: ProductItem[];
+  nearByRestuarant:[]
 }
 
 const initialState: ProductState = {
   loading: false,
   error: null,
   restaurantProducts: [],
+  nearByRestuarant:[]
 };
 
 // --------------------
@@ -86,6 +103,7 @@ const restaurantSlice = createSlice({
     clearProductData: (state) => {
       state.restaurantProducts = [];
       state.error = null;
+      state.nearByRestuarant = []
     },
   },
   extraReducers: (builder) => {
@@ -99,6 +117,18 @@ const restaurantSlice = createSlice({
         state.restaurantProducts = action.payload;
       })
       .addCase(fetchAllRestraurantProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchNearByRestraurant.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchNearByRestraurant.fulfilled, (state, action: PayloadAction<[]>) => {
+        state.loading = false;
+        state.nearByRestuarant = action.payload;
+      })
+      .addCase(fetchNearByRestraurant.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
