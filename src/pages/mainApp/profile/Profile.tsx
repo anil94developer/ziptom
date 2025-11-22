@@ -13,20 +13,22 @@ import Header from "../../../componets/header";
 import { useNavigation } from "@react-navigation/native";
 import { useAppNavigation } from "../../../utils/functions";
 import { useTheme } from "../../../theme/ThemeContext";
-import { Portal, Dialog, Button, Provider as PaperProvider } from "react-native-paper";
+import { Portal, Dialog, Button } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../../redux/store";
 import { profile, setUserDetails } from "../../../redux/slices/authSlice";
+import { setVegType } from "../../../redux/slices/homeSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = () => {
   const { colors, setTheme } = useTheme();
   const { goToEditProfile, goToLogin } = useAppNavigation();
   const navigation = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>();
   const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
+  const { vegType } = useSelector((state: any) => state.home);
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [vegMode, setVegMode] = useState(false);
   const [appearance, setAppearance] = useState("Automatic");
   const [rating, setRating] = useState<number | null>(null);
 
@@ -34,6 +36,33 @@ const Profile = () => {
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   const closeModal = () => setActiveModal(null);
+
+  // Calculate profile completion percentage
+  const calculateProfileCompletion = (userData: any): number => {
+    if (!userData) return 0;
+
+    const fields = [
+      userData.name,
+      userData.mobileNumber,
+      userData.diet_preference,
+      userData.eat_from,
+      userData.gender,
+      userData.dob,
+      userData.address && userData.address.length > 0,
+      userData.preference && Object.keys(userData.preference).length > 0,
+    ];
+
+    const filledFields = fields.filter((field) => {
+      if (typeof field === 'boolean') return field;
+      return field !== null && field !== undefined && field !== '';
+    }).length;
+
+    const totalFields = fields.length;
+    const percentage = Math.round((filledFields / totalFields) * 100);
+    return percentage;
+  };
+
+  const profileCompletion = calculateProfileCompletion(userDetails);
 
   const handleLogout = async () => {
     setLogoutVisible(false);
@@ -53,18 +82,26 @@ const Profile = () => {
   },[dispatch])
 
   return (
-    <PaperProvider>
-      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <Header title="Profile" onBack={() => navigation.goBack()} />
 
         {/* User Info */}
         <View style={[styles.userCard, { backgroundColor: colors.surface }]}>
           <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-            <Text style={[styles.avatarText, { color: colors.text }]}>{userDetails?.name?.charAt(0)?.toUpperCase()}</Text>
+            <Text style={[styles.avatarText, { color: colors.text }]}>
+              {userDetails?.name?.charAt(0)?.toUpperCase() || "U"}
+            </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.userName, { color: colors.text }]}>{userDetails.name}</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {userDetails?.name || "User"}
+            </Text>
+            {userDetails?.mobileNumber && (
+              <Text style={[styles.mobileText, { color: colors.textSecondary }]}>
+                {userDetails.mobileNumber}
+              </Text>
+            )}
             <TouchableOpacity>
               <Text style={[styles.activityText, { color: colors.primary }]}>
                 View activity
@@ -77,10 +114,10 @@ const Profile = () => {
         <TouchableOpacity
           style={[styles.goldCard, { backgroundColor: colors.primary }]}
         >
-          <Text style={[styles.goldText, { color: colors.onPrimary }]}>
+          <Text style={[styles.goldText, { color: "#fff" }]}>
             🌟 Ziptom Enjoy
           </Text>
-          <MaterialIcons name="chevron-right" size={24} color={colors.onPrimary} />
+          <MaterialIcons name="chevron-right" size={24} color="#fff" />
         </TouchableOpacity>
 
         {/* Quick Actions */}
@@ -92,7 +129,9 @@ const Profile = () => {
               color={colors.textSecondary}
             />
             <Text style={[styles.boxText, { color: colors.text }]}>Wallet</Text>
-            <Text style={[styles.subText, { color: colors.textSecondary }]}>₹ {userDetails?.wallet}</Text>
+            <Text style={[styles.subText, { color: colors.textSecondary }]}>
+              ₹ {userDetails?.wallet || "0"}
+            </Text>
           </View>
           {/* <View style={[styles.box, { backgroundColor: colors.surface }]}>
             <MaterialIcons
@@ -133,10 +172,10 @@ const Profile = () => {
             <Text
               style={[
                 styles.badge,
-                { backgroundColor: colors.primary, color: colors.textSecondary },
+                { backgroundColor: colors.primary, color: "#fff" },
               ]}
             >
-              32% completed
+              {profileCompletion}% completed
             </Text>
           </TouchableOpacity>
 
@@ -146,11 +185,11 @@ const Profile = () => {
           >
             <Text style={[styles.menuText, { color: colors.text }]}>Veg Mode</Text>
             <Text style={[styles.subText, { color: colors.textSecondary }]}>
-              {vegMode ? "ON" : "OFF"}
+              {vegType ? "ON" : "OFF"}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.menuItem, { borderColor: colors.border }]}
             onPress={() => setActiveModal("appearance")}
           >
@@ -158,7 +197,7 @@ const Profile = () => {
             <Text style={[styles.subText, { color: colors.textSecondary }]}>
               {appearance}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* <TouchableOpacity
             style={[styles.menuItem, { borderColor: colors.border }]}
@@ -199,7 +238,7 @@ const Profile = () => {
                 style={[styles.actionBtn, { backgroundColor: colors.primary }]}
                 onPress={closeModal}
               >
-                <Text style={[styles.actionText, { color: colors.onPrimary }]}>
+                <Text style={[styles.actionText, { color: "#fff" }]}>
                   Update Now
                 </Text>
               </TouchableOpacity>
@@ -218,14 +257,16 @@ const Profile = () => {
                   Enable Veg Only Mode
                 </Text>
                 <Switch
-                  value={vegMode}
-                  onValueChange={setVegMode}
+                  value={vegType}
+                  onValueChange={(value) => {
+                    dispatch(setVegType(value));
+                  }}
                   style={{ marginLeft: 10 }}
-                  thumbColor={vegMode ? colors.primary : colors.border}
+                  thumbColor={vegType ? colors.primary : colors.border}
                 />
               </View>
               <TouchableOpacity style={styles.closeBtn} onPress={closeModal}>
-                <Text style={[styles.closeText, { color: colors.text }]}>
+                <Text style={[styles.closeBtnText, { color: colors.text }]}>
                   Close
                 </Text>
               </TouchableOpacity>
@@ -245,7 +286,13 @@ const Profile = () => {
                   style={[styles.optionBtn, { borderColor: colors.border }]}
                   onPress={() => {
                     setAppearance(mode);
-                    setTheme(mode.toLowerCase());
+                    if (mode === "Light") {
+                      setTheme("light");
+                    } else if (mode === "Dark") {
+                      setTheme("dark");
+                    } else if (mode === "Automatic") {
+                      setTheme("light"); // Default to light for automatic
+                    }
                     closeModal();
                   }}
                 >
@@ -281,12 +328,12 @@ const Profile = () => {
                 ))}
               </View>
               <TouchableOpacity style={styles.closeBtn} onPress={closeModal}>
-                <Text style={[styles.closeText, { color: colors.text }]}>Close</Text>
+                <Text style={[styles.closeBtnText, { color: colors.text }]}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
-      </ScrollView>
+      
 
       {/* Logout Confirmation Dialog */}
       <Portal>
@@ -301,7 +348,7 @@ const Profile = () => {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </PaperProvider>
+    </ScrollView>
   );
 };
 
@@ -322,6 +369,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontSize: 20, fontWeight: "bold" },
   userName: { fontSize: 18, fontWeight: "bold" },
+  mobileText: { fontSize: 14, marginTop: 2 },
   activityText: { fontSize: 13, marginTop: 4 },
   goldCard: {
     padding: 15,
@@ -382,6 +430,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     alignItems: "center",
+  },
+  closeBtnText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
   optionBtn: {
     padding: 12,

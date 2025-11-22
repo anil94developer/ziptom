@@ -243,4 +243,39 @@ export const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#00C853",
       },
+      loadingText: {
+        fontSize: 16,
+        fontWeight: "500",
+        marginTop: 16,
+        textAlign: 'center',
+      },
+      errorText: {
+        fontSize: 14,
+        fontWeight: "400",
+        textAlign: 'center',
+        marginTop: 8,
+      },
+      loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+      },
+      errorContainer: {
+        alignItems: 'center',
+        marginTop: 20,
+        padding: 16,
+      },
+      retryButton: {
+        marginTop: 16,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+        minWidth: 120,
+        alignItems: 'center',
+      },
+      retryButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+      },
 });

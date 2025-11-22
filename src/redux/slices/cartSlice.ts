@@ -1,4 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { ENDPOINTS } from "../../api/endPoint";
+import api from "../../api/axiosConfig";
 
 interface CartItem {
     id: string;
@@ -46,6 +48,18 @@ const cartSlice = createSlice({
         },
     },
 });
+
+export const addCart = createAsyncThunk(
+    "cart/addCart",
+    async (cartData: { productId: string; quantity: number }, { rejectWithValue }) => {
+        try {
+            const response = await api.post(ENDPOINTS.ADD_CART, cartData);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
 
 export const { addToCart, removeFromCart, updateQuantity, clearCart } =
     cartSlice.actions;

@@ -1,5 +1,5 @@
 // src/redux/slices/authSlice.js
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "../../api/axiosConfig";
 import { ENDPOINTS } from "../../api/endPoint";
 
@@ -8,6 +8,7 @@ export const sendOtp = createAsyncThunk(
     "auth/sendOtp",
     async (phone, { rejectWithValue }) => {
         try {
+            console.log("phone====", ENDPOINTS.LOGIN)
             const { data } = await api.post(ENDPOINTS.LOGIN, { mobileNumber: phone });
             console.log(data)
             return data;
@@ -47,7 +48,7 @@ export const prefernces = createAsyncThunk(
         } catch (error) {
             console.error(error)
             return rejectWithValue(
-                error.response?.data?.message || "Invalid OTP"
+                error.response?.data?.message || "Invalid PREFERENCES"
             );
         }
     }
@@ -56,15 +57,16 @@ export const prefernces = createAsyncThunk(
 export const profile = createAsyncThunk(
     "auth/profile",
     async (body, { rejectWithValue }) => {
-        console.log("request====", body)
+        console.log("Fetching profile from:", ENDPOINTS.PROFILE)
         try {
             const { data } = await api.get(ENDPOINTS.PROFILE);
-            console.log(data)
-            return data; // token + user
+            console.log("Profile API Response:", data)
+            // Handle response structure: { success, status, message, data: { user: {...} } }
+            return data;
         } catch (error) {
-            console.error(error)
+            console.error("Error fetching profile:", error)
             return rejectWithValue(
-                error.response?.data?.message || "Invalid"
+                error.response?.data?.message || "Failed to fetch profile"
             );
         }
     }
@@ -73,15 +75,16 @@ export const profile = createAsyncThunk(
 export const updateProfile = createAsyncThunk(
     "auth/updateProfile",
     async (body, { rejectWithValue }) => {
-        console.log("request====", body)
+        console.log("Updating profile with data:", body);
+        console.log("Endpoint:", ENDPOINTS.EDIT_PROFILE);
         try {
-            const { data } = await api.post(ENDPOINTS.UPDATE_PROFILE, body);
-            console.log(data)
-            return data; // token + user
+            const { data } = await api.put(ENDPOINTS.EDIT_PROFILE, body);
+            console.log("Profile update response:", data);
+            return data;
         } catch (error) {
-            console.error(error)
+            console.error("Error updating profile:", error);
             return rejectWithValue(
-                error.response?.data?.message || "Invalid"
+                error.response?.data?.message || "Failed to update profile"
             );
         }
     }
@@ -163,20 +166,36 @@ const authSlice = createSlice({
             })
             .addCase(profile.fulfilled,  (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.userDetails = action.payload.data;
+                // Handle response structure: { success, status, message, data: { user: {...} } }
+                if (action.payload?.data?.user) {
+                    state.userDetails = action.payload.data.user;
+                } else if (action.payload?.data) {
+                    // Fallback for different response structures
+                    state.userDetails = action.payload.data;
+                } else {
+                    state.userDetails = action.payload;
+                }
+                console.log("Updated userDetails:", state.userDetails);
               })
             .addCase(profile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
 
-            // verifyOtp
+            // updateProfile
             .addCase(updateProfile.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateProfile.fulfilled, (state, action) => {
+            .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
+                // Update userDetails if the response contains updated user data
+                if (action.payload?.data?.user) {
+                    state.userDetails = action.payload.data.user;
+                } else if (action.payload?.data) {
+                    state.userDetails = { ...state.userDetails, ...action.payload.data };
+                }
+                console.log("Updated userDetails:", state.userDetails);
             })
             .addCase(updateProfile.rejected, (state, action) => {
                 state.loading = false;

@@ -77,7 +77,29 @@ export interface NineNineProduct {
 // Async Thunks
 // --------------------
 
-// Fetch all 99 products
+// Product query parameters interface
+export interface ProductQueryParams {
+  page?: number;
+  limit?: number;
+  categoryId?: string;
+  search?: string;
+}
+
+// Products API response interface
+export interface ProductsResponse {
+  success: boolean;
+  data: NineNineProduct[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+
+// Fetch all 99 products (legacy endpoint)
 export const fetchNineNineProducts = createAsyncThunk(
   "home/fetchNineNineProducts",
   async (_, { rejectWithValue }) => {
@@ -85,6 +107,39 @@ export const fetchNineNineProducts = createAsyncThunk(
       const { data } = await api.get(ENDPOINTS.NINE_NINE_PRODUCTS);
       console.log("Products API Response:", data);
       return data?.data || data;
+    } catch (error: any) {
+      console.error("Error fetching products:", error);
+      return rejectWithValue(error.response?.data?.message || "Failed to load products");
+    }
+  }
+);
+
+// Fetch products with filters and pagination
+export const fetchProducts = createAsyncThunk(
+  "home/fetchProducts",
+  async (params: ProductQueryParams = {}, { rejectWithValue }) => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params.page) queryParams.append("page", params.page.toString());
+      if (params.limit) queryParams.append("limit", params.limit.toString());
+      if (params.categoryId) queryParams.append("categoryId", params.categoryId);
+      if (params.search) queryParams.append("search", params.search);
+      
+      const queryString = queryParams.toString();
+      const endpoint = queryString 
+        ? `${ENDPOINTS.PRODUCTS}?${queryString}`
+        : ENDPOINTS.PRODUCTS;
+      
+      console.log("Fetching products from:", endpoint);
+      const { data } = await api.get(endpoint);
+      console.log("Products API Response:", data);
+      
+      return {
+        products: data?.data || data || [],
+        pagination: data?.pagination || null,
+        append: params.page ? params.page > 1 : false, // Append if page > 1
+      };
     } catch (error: any) {
       console.error("Error fetching products:", error);
       return rejectWithValue(error.response?.data?.message || "Failed to load products");
@@ -132,6 +187,17 @@ interface HomeState {
   products: NineNineProduct[];
   categories: Category[];
   restaurants: Restaurant[];
+  vegType: boolean;
+  // Pagination state
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  // Filter state
+  searchQuery: string;
+  selectedCategoryId: string | null;
 }
 
 const initialState: HomeState = {
@@ -140,6 +206,17 @@ const initialState: HomeState = {
   products: [],
   categories: [],
   restaurants: [],
+  vegType: true,
+  // Pagination
+  currentPage: 1,
+  totalPages: 1,
+  totalItems: 0,
+  itemsPerPage: 20,
+  hasNextPage: false,
+  hasPrevPage: false,
+  // Filters
+  searchQuery: "",
+  selectedCategoryId: null,
 };
 
 // --------------------
@@ -155,6 +232,30 @@ const homeSlice = createSlice({
       state.categories = [];
       state.restaurants = [];
       state.error = null;
+      // Reset pagination
+      state.currentPage = 1;
+      state.totalPages = 1;
+      state.totalItems = 0;
+      state.hasNextPage = false;
+      state.hasPrevPage = false;
+      // Reset filters
+      state.searchQuery = "";
+      state.selectedCategoryId = null;
+    },
+    setVegType: (state, action: PayloadAction<boolean>) => {
+      state.vegType = action.payload;
+    },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
+      state.currentPage = 1; // Reset to first page on search
+    },
+    setSelectedCategoryId: (state, action: PayloadAction<string | null>) => {
+      state.selectedCategoryId = action.payload;
+      state.currentPage = 1; // Reset to first page on category change
+    },
+    resetPagination: (state) => {
+      state.currentPage = 1;
+      state.products = [];
     },
   },
   extraReducers: (builder) => {
@@ -169,6 +270,37 @@ const homeSlice = createSlice({
         state.products = action.payload;
       })
       .addCase(fetchNineNineProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Fetch Products with filters and pagination
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action: PayloadAction<{ products: NineNineProduct[]; pagination: any; append: boolean }>) => {
+        state.loading = false;
+        
+        if (action.payload.append) {
+          // Append products for pagination
+          state.products = [...state.products, ...action.payload.products];
+        } else {
+          // Replace products for new search/filter
+          state.products = action.payload.products;
+        }
+        
+        // Update pagination state
+        if (action.payload.pagination) {
+          state.currentPage = action.payload.pagination.currentPage || 1;
+          state.totalPages = action.payload.pagination.totalPages || 1;
+          state.totalItems = action.payload.pagination.totalItems || 0;
+          state.itemsPerPage = action.payload.pagination.itemsPerPage || 20;
+          state.hasNextPage = action.payload.pagination.hasNextPage || false;
+          state.hasPrevPage = action.payload.pagination.hasPrevPage || false;
+        }
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -207,5 +339,11 @@ const homeSlice = createSlice({
 // Exports
 // --------------------
 
-export const { clearHomeData } = homeSlice.actions;
+export const { 
+  clearHomeData, 
+  setVegType, 
+  setSearchQuery, 
+  setSelectedCategoryId, 
+  resetPagination 
+} = homeSlice.actions;
 export default homeSlice.reducer;

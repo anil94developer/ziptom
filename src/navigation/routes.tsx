@@ -9,6 +9,7 @@ export enum Routes {
     EditProfile="EditProfile",
     OrderDetails="OrderDetails",
     OrderPlaceScreen="OrderPlaceScreen",
+    ProductList="ProductList",  
 
     OrderTracking="OrderTracking",
     CartScreen="CartScreen",

@@ -19,6 +19,7 @@ import { useTheme } from "../../../theme/ThemeContext";
 import { createOrder } from "../../../redux/slices/orderSlice";
 import { addAddress, getAddress } from "../../../redux/slices/addressSlice";
 import { showToast } from "../../../redux/slices/toastSlice";
+import { RootState } from "../../../redux/store";
 
 
 const OrderPlaceScreen = () => {
@@ -133,14 +134,38 @@ const OrderPlaceScreen = () => {
 
     // 🧾 Place Order
     const handlePlaceOrder = async () => {
-        const address = addresses?.find((a) => a.id === selectedAddress);
+        // Validate cart is not empty
+        if (!cartItems || cartItems.length === 0) {
+            dispatch(showToast({ message: "Your cart is empty. Please add items to place an order.", type: "error" }));
+            return;
+        }
+
+        // Validate address is selected
+        if (!selectedAddress || selectedAddress.trim() === "") {
+            dispatch(showToast({ message: "Please select a delivery address", type: "error" }));
+            return;
+        }
+
+        // Validate address exists
+        const address = addresses?.find((a) => a.label === JSON.parse(selectedAddress).label);
+        if (!address) {
+            dispatch(showToast({ message: "Selected address not found. Please select a valid address.", type: "error" }));
+            return;
+        }
+
+        // Validate address has required fields
+        if (!address.address || !address.city || !address.country) {
+            dispatch(showToast({ message: "Selected address is incomplete. Please select a complete address.", type: "error" }));
+            return;
+        }
+
         let orderData = {
             payment_method: "Online",
             coupon_code: couponCode,
             delivery_charges: deliveryCharge,
             tax_amount: "",
             total_amount: totalAmount,
-            address_id: address,
+            address_id: address.label +", "+address.address +", "+address.city +", "+address.country +", "+address.landmark,
             items: cartItems
         }
         console.log(orderData)
@@ -178,16 +203,16 @@ const OrderPlaceScreen = () => {
                                 styles.addressCard,
                                 {
                                     backgroundColor:
-                                        selectedAddress === item.id
+                                        selectedAddress.name === item.name
                                             ? colors.primary + "20"
                                             : colors.surface,
                                     borderColor:
-                                        selectedAddress === item.id
+                                    selectedAddress.name === item.name 
                                             ? colors.primary
                                             : colors.border,
                                 },
                             ]}
-                            onPress={() => setSelectedAddress(item.id)}
+                            onPress={() => setSelectedAddress(JSON.stringify(item))}
                         >
                             <Text style={[styles.addressLabel, { color: colors.text }]}>
                                 {item.label}

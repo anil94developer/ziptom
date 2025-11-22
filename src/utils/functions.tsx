@@ -60,6 +60,9 @@ export const useAppNavigation = () => {
   const goToDetails = (id: string | number, params?: any) => {
     navigation.navigate(Routes.Dashboard, { id, ...params });
   };
+  const goToProductList = (params?: any) => {
+    navigation.navigate(Routes.ProductList, params);
+  }
 
   // Add more navigation functions as needed
 
@@ -76,7 +79,8 @@ export const useAppNavigation = () => {
     goToOrderDetails,
     goToOrderTracking,
     goToCartScreen,
-    goToOrderPlacePage
+    goToOrderPlacePage,
+    goToProductList,
     // Add more here
   };
 };

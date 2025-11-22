@@ -15,74 +15,115 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { useTheme } from "../../../theme/ThemeContext";
 import { foodItems } from "../../../enums/foods";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllRestraurantProducts } from "./../../../redux/slices/restaurantSlice"
-import { removeFromCart, addToCart, updateQuantity } from '../../../redux/slices/cartSlice';
+import { fetchAllRestraurantProducts, ProductItem } from "./../../../redux/slices/restaurantSlice"
+import { removeFromCart, addToCart, updateQuantity, addCart } from '../../../redux/slices/cartSlice';
+import { AppDispatch, RootState } from '../../../redux/store';
+import { Item } from "react-native-paper/lib/typescript/components/Drawer/Drawer";
+import { showToast } from "../../../redux/slices/toastSlice";
 
-const RestaurantDetails = ({ route }) => {
+interface RouteParams {
+    restroDetails?: any;
+}
+
+interface RestaurantDetailsProps {
+    route: {
+        params: RouteParams;
+    };
+}
+
+const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
     const { restroDetails } = route.params;
-    console.log("item details", restroDetails)
+    // console.log("item details", restroDetails)
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const cartItems = useSelector((state: RootState) => state.cart.items);
-    const { restaurantProducts } = useSelector((state: any) => state.restaurant);
+    const { restaurantProducts, restaurantDetails, loading: restaurantLoading, error: restaurantError } = useSelector((state: any) => state.restaurant);
     const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
+    
+    // Use restaurant details from Redux if available, otherwise fallback to route params
+    const restaurant = restaurantDetails || restroDetails;
+
+    // Debug logs
+    // useEffect(() => { 
+    // }, [restaurantDetails, restaurantProducts, restaurantLoading, restaurantError]);
 
 
 
     const { colors } = useTheme();
     const navigation = useNavigation();
-    const [cart, setCart] = useState({});
+    const [cart, setCart] = useState<Record<string, number>>({});
     const [menuVisible, setMenuVisible] = useState(false);
     const [productVisible, setProductVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<ProductItem | {}>({});
 
     useEffect(() => {
         const getData = async () => {
-            dispatch(fetchAllRestraurantProducts(restroDetails._id));
+            const restaurantId = restroDetails?.restaurant?._id || restroDetails?.restaurant?.id || restroDetails?._id ;
+            
+            // alert(restaurantId)
+            if (restaurantId && typeof restaurantId === 'string') {
+                dispatch(fetchAllRestraurantProducts(restaurantId));
+            }
         }
         getData()
-    }, [dispatch,restroDetails._id])
+    }, [dispatch, restroDetails?.restaurant?._id, restroDetails?.restaurant?.id])
 
 
 
     // helper to get current quantity for product
-    const getQuantity = (id) => {
+    const getQuantity = (id: string) => {
         const item = cartItems.find((i) => i.id === id);
         return item ? item.quantity : 0;
     };
 
-    const renderItem = ({ item }) => {
-
-        const quantity = getQuantity(item._id);
+    const renderItem = (item: ProductItem) => {
+        const itemId = (item._id || item.id) as string;
+        if (!itemId) return null;
+        const quantity = getQuantity(itemId);
 
         return (
-            <View style={styles.card}>
+            <View key={itemId} style={styles.card}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.foodName}>{item.name}</Text>
-                    <Text style={styles.foodPrice}>₹{item.price}</Text>
-                    <Text style={styles.foodDesc} numberOfLines={2}>
-                        {item.restaurantId.name}
-                    </Text>
-                    <Text style={styles.foodDesc} numberOfLines={2}>
-                        {2}
-                    </Text>
+                    <Text style={styles.foodName}>{item.name || 'Unknown Item'}</Text>
+                    <Text style={styles.foodPrice}>₹{item.price || 0}</Text>
+                    {item.category && (
+                        <Text style={styles.foodDesc} numberOfLines={2}>
+                            {item.category.name}
+                        </Text>
+                    )}
+                    {item.type && (
+                        <Text style={[styles.foodDesc, { color: item.type === 'veg' ? '#4CAF50' : '#f44336' }]} numberOfLines={2}>
+                            {item.type.toUpperCase()}
+                        </Text>
+                    )}
                 </View>
                 <View style={{ alignItems: "center" }}>
-                    <Image source={{ uri: item.image }} style={styles.foodImage} />
+                    {item.image && (
+                        <Image source={{ uri: item.image }} style={styles.foodImage} />
+                    )}
 
                     {quantity === 0 ? (
                         <TouchableOpacity
                             style={styles.addButton}
-                            onPress={() =>
+                            onPress={async () => {
                                 dispatch(
                                     addToCart({
-                                        id: item._id,
-                                        name: item.name,
+                                        id: itemId,
+                                        title: item.name,
                                         price: item.price,
                                         quantity: 1,
-                                        image:item.image
+                                        image: item.image
 
                                     })
                                 )
+                                dispatch(showToast({ message: "Item added to cart", type: "success" }));
+                                // if (itemId) {
+                                //     await dispatch(addCart({
+                                //         "productId": itemId,
+                                //         "quantity": 1
+                                //     })).unwrap();
+                                // }
+                            }
                             }
                         >
                             <Text style={styles.addText}>ADD +</Text>
@@ -91,9 +132,13 @@ const RestaurantDetails = ({ route }) => {
                         <View style={styles.qtyContainer}>
                             <TouchableOpacity
                                 style={styles.qtyBtn}
-                                onPress={() => dispatch(
-                                    updateQuantity({ id: item._id, quantity: quantity + 1 })
-                                )}
+                                onPress={() => {
+                                    if (quantity > 1) {
+                                        dispatch(updateQuantity({ id: itemId, quantity: quantity - 1 }));
+                                    } else {
+                                        dispatch(removeFromCart({ id: itemId }));
+                                    }
+                                }}
                             >
                                 <Text style={styles.qtyText}>-</Text>
                             </TouchableOpacity>
@@ -101,16 +146,7 @@ const RestaurantDetails = ({ route }) => {
                             <TouchableOpacity
                                 style={styles.qtyBtn}
                                 onPress={() =>
-                                    dispatch(
-                                        addToCart({
-                                            id: item._id,
-                                            name: item.name,
-                                            price: item.price,
-                                            quantity: 1,
-                                            image:item.image
-
-                                        })
-                                    )
+                                    dispatch(updateQuantity({ id: itemId, quantity: quantity + 1 }))
                                 }
                             >
                                 <Text style={styles.qtyText}>+</Text>
@@ -130,9 +166,9 @@ const RestaurantDetails = ({ route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: "#fff" }}>
             <Header
-                title={restroDetails?.name}
+                title={restaurant?.name || restroDetails?.name || 'Restaurant'}
                 onBack={() => navigation.goBack()}
-                // onAdd={() => console.log("Add clicked!")}
+                onAdd={() => {}}
             />
             <ScrollView style={styles.container}>
                 {/* Header */}
@@ -140,22 +176,41 @@ const RestaurantDetails = ({ route }) => {
 
                 {/* Restaurant Info */}
                 <View style={styles.header}>
-                    <Text style={styles.restaurantName}>{restroDetails?.name}</Text>
+                    <Text style={styles.restaurantName}>{restaurant?.name || restroDetails?.name}</Text>
                     <View style={styles.ratingBox}>
-                        <Text style={styles.ratingText}>{restroDetails?.rating?.average} ★</Text>
+                        <Text style={styles.ratingText}>{restaurant?.rating?.average || restroDetails?.rating?.average || 0} ★</Text>
                     </View>
                 </View>
-                <Text style={styles.subText}>2.1 km • 20-25 mins • {restroDetails?.location?.address}</Text>
-                <Text style={styles.subText}>Frequently Reordered ✅</Text>
+                {restaurant?.address?.fullAddress && (
+                    <Text style={styles.subText}>{restaurant.address.fullAddress}</Text>
+                )}
+                {restaurant?.rating?.count && (
+                    <Text style={styles.subText}>{restaurant.rating.count} reviews • {restaurant.cuisineType?.join(', ')}</Text>
+                )}
+                {restaurant?.features && restaurant.features.length > 0 && (
+                    <Text style={styles.subText}>Features: {restaurant.features.join(', ')}</Text>
+                )}
                 <Text style={styles.offer}>🚴 Free Delivery above ₹149</Text>
 
                 {/* Recommended */}
                 <Text style={styles.sectionTitle}>Recommended for you</Text>
-                <FlatList
-                    data={restaurantProducts}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderItem}
-                />
+                {restaurantLoading ? (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <Text style={styles.subText}>Loading...</Text>
+                    </View>
+                ) : restaurantError ? (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <Text style={[styles.subText, { color: 'red' }]}>Error: {restaurantError}</Text>
+                    </View>
+                ) : restaurantProducts && restaurantProducts.length > 0 ? (
+                    restaurantProducts.map((item: ProductItem, index: number) => {
+                        return renderItem(item);
+                    })
+                ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <Text style={styles.subText}>No items available</Text>
+                    </View>
+                )}
             </ScrollView>
 
             {/* Floating Menu Button */}
@@ -177,15 +232,21 @@ const RestaurantDetails = ({ route }) => {
 
                         <FlatList
                             data={restaurantProducts}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item._id || item.id || Math.random().toString()}
                             numColumns={2}
                             columnWrapperStyle={{ justifyContent: "space-between" }}
                             showsVerticalScrollIndicator={false}
-                            renderItem={({ item }) => {
-                                const qty = cart[item.id] || 0;
+                            renderItem={({ item }: { item: ProductItem }) => {
+                                const itemId = (item._id || item.id) as string;
+                                if (!itemId) return null;
+                                const qty = cart[itemId] || 0;
                                 return (
                                     <TouchableOpacity
-                                        onPress={() => setProductVisible(true)}
+                                        onPress={() => {
+                                            setProductVisible(true)
+
+                                            setSelectedProduct(item);
+                                        }}
                                         style={styles.modalCard}>
                                         <Image source={{ uri: item.image }} style={styles.modalImage} />
                                         <Text style={styles.modalFoodName} numberOfLines={1}>
@@ -194,7 +255,7 @@ const RestaurantDetails = ({ route }) => {
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
 
                                             <Text style={styles.modalFoodPrice}>₹{item.price}</Text>
-                                            <Text style={styles.modalFoodPrice}>{item.type}</Text>
+                                            <Text style={[styles.modalFoodPrice, { color: item.type === 'veg' ? '#4CAF50' : '#f44336' }]}>{item.type?.toUpperCase()}</Text>
 
                                             {/* {qty === 0 ? (
                                                 <TouchableOpacity
@@ -254,17 +315,15 @@ const RestaurantDetails = ({ route }) => {
                         <ScrollView showsVerticalScrollIndicator={false}>
                             {/* Product Image */}
                             <Image
-                                source={{ uri: foodItems[0].image }}
+                                source={{ uri: (selectedProduct as ProductItem).image || '' }}
                                 style={styles.detailImage}
                             />
 
                             {/* Product Info */}
-                            <Text style={styles.detailName}>{foodItems[0].name}</Text>
-                            <Text style={styles.detailPrice}>₹{foodItems[0].price}</Text>
+                            <Text style={styles.detailName}>{(selectedProduct as ProductItem).name || ''}</Text>
+                            <Text style={styles.detailPrice}>₹{(selectedProduct as ProductItem).price || 0}</Text>
                             <Text style={styles.detailDesc}>
-                                {foodItems[0].desc ||
-                                    "This is a delicious dish prepared with fresh ingredients. Perfect for your cravings!"}
-                            </Text>
+                                {(selectedProduct as ProductItem).description || ''} </Text>
 
                             {/* Rating */}
                             <View style={styles.ratingRow}>
@@ -274,38 +333,67 @@ const RestaurantDetails = ({ route }) => {
 
                             {/* Add to Cart Controls */}
                             <View style={styles.cartRow}>
-                                {0 === 0 ? (
-                                    <TouchableOpacity
-                                        style={styles.addButton}
-                                        onPress={() => addToCart(foodItems[0])}
-                                    >
-                                        <Text style={styles.addText}>ADD +</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <View style={styles.qtyContainer}>
+                                {(() => {
+                                    const product = selectedProduct as ProductItem;
+                                    const productId = (product._id || product.id) as string;
+                                    if (!productId) return null;
+                                    const productQuantity = getQuantity(productId);
+                                    return productQuantity === 0 ? (
                                         <TouchableOpacity
-                                            style={styles.qtyBtn}
-                                            onPress={() => removeFromCart(foodItems[0])}
+                                            style={styles.addButton}
+                                            onPress={async () => {
+                                                dispatch(
+                                                    addToCart({
+                                                        id: productId,
+                                                        title: product.name,
+                                                        price: product.price,
+                                                        quantity: 1,
+                                                        image: product.image
+                                                    })
+                                                )
+                                                dispatch(showToast({ message: "Item added to cart", type: "success" }));
+                                                // await dispatch(addCart({
+                                                //     "productId": productId,
+                                                //     "quantity": 1
+                                                // })).unwrap();
+                                            }
+                                            
+                                        }
                                         >
-                                            <Text style={styles.qtyText}>-</Text>
+                                    <Text style={styles.addText}>ADD +</Text>
                                         </TouchableOpacity>
-                                        <Text style={styles.qtyCount}>{1}</Text>
-                                        <TouchableOpacity
-                                            style={styles.qtyBtn}
-                                            onPress={() => addToCart(foodItems[0])}
-                                        >
-                                            <Text style={styles.qtyText}>+</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
+                            ) : (
+                            <View style={styles.qtyContainer}>
+                                <TouchableOpacity
+                                    style={styles.qtyBtn}
+                                    onPress={() => {
+                                        if (productQuantity > 1) {
+                                            dispatch(updateQuantity({ id: productId, quantity: productQuantity - 1 }));
+                                        } else {
+                                            dispatch(removeFromCart({ id: productId }));
+                                        }
+                                    }}
+                                >
+                                    <Text style={styles.qtyText}>-</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.qtyCount}>{productQuantity}</Text>
+                                <TouchableOpacity
+                                    style={styles.qtyBtn}
+                                    onPress={() => dispatch(updateQuantity({ id: productId, quantity: productQuantity + 1 }))}
+                                >
+                                    <Text style={styles.qtyText}>+</Text>
+                                </TouchableOpacity>
                             </View>
-                        </ScrollView>
+                            );
+                                })()}
                     </View>
-                </View>
-            </Modal>
-
-
+                </ScrollView>
         </View>
+                </View >
+            </Modal >
+
+
+        </View >
     );
 };
 

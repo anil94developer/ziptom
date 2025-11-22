@@ -1,8 +1,11 @@
 import { PermissionsAndroid, Platform, Alert, Linking } from "react-native";
-import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
+import { request, PERMISSIONS, RESULTS } from "react-native-permissions";
+import type { Permission } from "react-native-permissions";
 import Geolocation from "react-native-geolocation-service";
-export const requestAppPermission = async (type) => {
-  let permission;
+type PermissionType = "location" | "camera" | "gallery";
+
+export const requestAppPermission = async (type: PermissionType) => {
+  let permission: Permission | null = null;
 
   switch (type) {
     case "location":
@@ -31,12 +34,6 @@ export const requestAppPermission = async (type) => {
     //       ? PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
     //       : PERMISSIONS.IOS.MEDIA_LIBRARY;
     //   break;
-    case "notification":
-      permission =
-        Platform.OS === "android"
-          ? PERMISSIONS.ANDROID.POST_NOTIFICATIONS
-          : PERMISSIONS.IOS.NOTIFICATIONS;
-      break;
     default:
       return false;
   }
@@ -67,8 +64,8 @@ export const requestAppPermission = async (type) => {
 };
 
 export const requestAllPermissions = async () => {
-  const permissions = ["location", "camera", "gallery", "storage"];
-  const results = {};
+  const permissions: PermissionType[] = ["location", "camera", "gallery"];
+  const results: Partial<Record<PermissionType, boolean>> = {};
   for (const type of permissions) {
     results[type] = await requestAppPermission(type);
   }
@@ -77,7 +74,7 @@ export const requestAllPermissions = async () => {
 };
 
 
-export const getCurrentLocation = async () => {
+export const getCurrentLocation1 = async () => {
   try {
     let hasPermission = false;
 
@@ -98,26 +95,98 @@ export const getCurrentLocation = async () => {
 
     console.log("📡 Getting current position...");
 
-    // return new Promise((resolve, reject) => {
-    //   Geolocation.getCurrentPosition(
-    //     (position) => {
-    //       const { latitude, longitude } = position.coords;
-    //       console.log("📍 Current Location:", latitude, longitude);
-    //       resolve({ latitude, longitude });
-    //     },
-    //     (error) => {
-    //       console.log("❌ Geolocation error:", error);
-    //       reject(error);
-    //     },
-    //     {
-    //       enableHighAccuracy: true,
-    //       timeout: 15000,
-    //       maximumAge: 10000,
-    //     }
-    //   );
-    // });
+    return new Promise((resolve) => {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("📍 Current Location:", latitude, longitude);
+          resolve({ latitude, longitude });
+        },
+        (error) => {
+          console.log("❌ Geolocation error:", error);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        }
+      );
+    });
   } catch (error) {
     console.log("⚠️ Unexpected error:", error);
     return null;
   }
 };
+export async function getCurrentLocation() {
+  try {
+    // 1️⃣ Request permission safely
+    let granted = false;
+
+    if (Platform.OS === 'ios') {
+      const auth = await Geolocation.requestAuthorization('whenInUse');
+      granted = auth === 'granted';
+    } else {
+      const permission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Access Required',
+          message: 'We need to access your location to provide services.',
+          buttonPositive: 'OK',
+        },
+      );
+      granted = permission === PermissionsAndroid.RESULTS.GRANTED;
+    }
+
+    if (!granted) {
+      Alert.alert('Permission Denied', 'Location permission is required.');
+      return null;
+    }
+
+    // 2️⃣ Wrap native call in try/catch
+    return await new Promise((resolve) => {
+      let resolved = false;
+      const done = (val) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timer);
+          resolve(val);
+        }
+      };
+
+      const timer = setTimeout(() => {
+        console.log('⏳ Location request timeout');
+        done(null);
+      }, 20000);
+
+      try {
+        Geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            console.log('📍 Location:', latitude, longitude);
+            done({ latitude, longitude });
+          },
+          (error) => {
+            console.log('❌ Location error:', error);
+            Alert.alert('Error getting location', error.message);
+            done(null);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 10000,
+            // 🚫 DO NOT include these in RN 0.81+
+            // showLocationDialog: true,
+            // forceRequestLocation: true,
+          },
+        );
+      } catch (err) {
+        console.log('🔥 Native crash prevented:', err);
+        done(null);
+      }
+    });
+  } catch (err) {
+    console.log('🔥 getCurrentLocation failed:', err);
+    return null;
+  }
+}

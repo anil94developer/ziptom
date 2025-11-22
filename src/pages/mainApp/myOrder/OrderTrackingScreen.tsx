@@ -7,9 +7,7 @@ import Header from "../../../componets/header";
 import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
-
-const GOOGLE_API_KEY = "AIzaSyCJEGqn0OfqHe1OAhMp35nhlc8cRGPtkKw"; // 🔑 put your API key here
-
+ 
 const OrderTrackingScreen = () => {
   const navigation = useNavigation();
   const [userLocation] = useState({

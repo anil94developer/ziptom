@@ -12,6 +12,7 @@ module.exports = {
         allowUndefined: true,
       },
     ],
-    'react-native-reanimated/plugin', // 👈 always last
+    // Only include reanimated plugin if installed
+    // 'react-native-reanimated/plugin', // 👈 always last (uncomment if you install react-native-reanimated)
   ],
 };

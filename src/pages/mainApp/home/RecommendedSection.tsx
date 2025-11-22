@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,14 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../../redux/store";
+import { fetchRestaurants, Restaurant } from "../../../redux/slices/restaurantSlice";
+import { useAppNavigation } from "../../../utils/functions";
+import { calculateDistance, formatDistance } from "../../../utils/helper";
 
 const DATA = [
   {
@@ -61,44 +67,126 @@ const DATA = [
 ];
 
 // helper: group data into chunks of 2
-const chunkArray = (arr, size) => {
-  return arr.reduce((acc, _, i) => {
+const chunkArray = <T,>(arr: T[], size: number): T[][] => {
+  return arr.reduce((acc: T[][], _, i: number) => {
     if (i % size === 0) acc.push(arr.slice(i, i + size));
     return acc;
   }, []);
 };
 
-export default function RecommendedSection() {
-  const groupedData = chunkArray(DATA, 2);
+interface RecommendedSectionProps {
+  currentLocation?: { latitude: number; longitude: number } | null;
+}
 
-  const renderCard = (item) => (
-    <TouchableOpacity key={item.id} style={styles.card}>
-      <Image source={{ uri: item.img }} style={styles.image} />
+export default function RecommendedSection({ currentLocation }: RecommendedSectionProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { restaurants, loading } = useSelector((state: any) => state.restaurant);
+  const { goToRestaurantDetails } = useAppNavigation();
+  const [recommendedRestaurants, setRecommendedRestaurants] = useState<Restaurant[]>([]);
 
-      {/* Discount Badge */}
-      <View style={styles.discountBadge}>
-        <Text style={styles.discountText}>{item.discount}</Text>
-      </View>
+  // Fetch recommended restaurants with location
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      if (currentLocation) {
+        const result = await dispatch(fetchRestaurants({
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+          raduis: 10, // 10km radius as per user requirement
+        }));
+        if (fetchRestaurants.fulfilled.match(result)) {
+          const restaurantsData = result.payload?.data || result.payload || [];
+          // Take first 6 restaurants for recommended section
+          setRecommendedRestaurants(restaurantsData.slice(0, 6));
+        }
+      } else {
+        // Fetch all restaurants if no location
+        const result = await dispatch(fetchRestaurants());
+        if (fetchRestaurants.fulfilled.match(result)) {
+          const restaurantsData = result.payload?.data || result.payload || [];
+          setRecommendedRestaurants(restaurantsData.slice(0, 6));
+        }
+      }
+    };
+    fetchRecommended();
+  }, [dispatch, currentLocation]);
 
-      {/* Name */}
-      <Text style={styles.name} numberOfLines={1}>
-        {item.name}
-      </Text>
+  const groupedData = chunkArray(recommendedRestaurants, 2);
 
-      {/* Row: rating + time */}
-      <View style={styles.row}>
-        <Text style={styles.rating}>⭐ {item.rating}</Text>
-        <MaterialIcons name="time-outline" size={14} color="#555" style={{ marginLeft: 8 }} />
-        <Text style={styles.time}>{item.time}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderCard = (item: Restaurant | any) => {
+    const restaurantId = item._id || item.id;
+    const imageUrl = item.images?.[0]?.url || item.image || 'https://via.placeholder.com/200/150';
+    const rating = item.rating?.average || item.rating || 0;
+    
+    // Calculate distance from current location to restaurant
+    let distanceText = "";
+    if (currentLocation && item.latitude && item.longitude) {
+      const distance = calculateDistance(
+        currentLocation.latitude,
+        currentLocation.longitude,
+        item.latitude,
+        item.longitude
+      );
+      distanceText = formatDistance(distance);
+    }
+    
+    return (
+      <TouchableOpacity 
+        key={restaurantId} 
+        style={styles.card}
+        onPress={() => {
+          goToRestaurantDetails({restroDetails:item});
+        }}
+      >
+        <Image source={{ uri: imageUrl }} style={styles.image} />
 
-  const renderColumn = ({ item }) => (
+        {/* Distance Badge */}
+        {distanceText && (
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>{distanceText}</Text>
+          </View>
+        )}  
+
+        {/* Name */}
+        <Text style={styles.name} numberOfLines={1}>
+          {item.name || 'Restaurant'}
+        </Text>
+
+        {/* Row: rating + cuisine type */}
+        <View style={styles.row}>
+          {/* <Text style={styles.rating}>⭐ {rating.toFixed(1)}</Text> */}
+          {item.cuisineType && item.cuisineType.length > 0 && (
+            <>
+              <MaterialIcons name="restaurant" size={14} color="#555" style={{ marginLeft: 8 }} />
+              <Text style={styles.time} numberOfLines={1}>
+                {item.cuisineType[0]}
+              </Text>
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderColumn = ({ item }: { item: Restaurant[] }) => (
     <View style={styles.column}>
-      {item.map((food) => renderCard(food))}
+      {item.map((food: Restaurant) => renderCard(food))}
     </View>
   );
+
+  if (loading && recommendedRestaurants.length === 0) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>RECOMMENDED FOR YOU</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#f44336" />
+        </View>
+      </View>
+    );
+  }
+
+  if (recommendedRestaurants.length === 0) {
+    return null;
+  }
 
   return (
     <View style={styles.section}>
@@ -182,5 +270,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 4,
     color: "#555",
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
