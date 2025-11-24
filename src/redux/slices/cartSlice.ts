@@ -2,12 +2,13 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ENDPOINTS } from "../../api/endPoint";
 import api from "../../api/axiosConfig";
 
-interface CartItem {
+export interface CartItem {
     id: string;
     title: string;
     price: number;
     quantity: number;
-    image:string
+    image: string;
+    restaurantId?: string;
 }
 
 interface CartState {
@@ -26,6 +27,10 @@ const cartSlice = createSlice({
             const existing = state.items.find((item) => item.id === action.payload.id);
             if (existing) {
                 existing.quantity += action.payload.quantity;
+                // Update restaurantId if provided
+                if (action.payload.restaurantId) {
+                    existing.restaurantId = action.payload.restaurantId;
+                }
             } else {
                 state.items.push(action.payload);
             }

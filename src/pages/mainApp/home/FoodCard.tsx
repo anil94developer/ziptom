@@ -3,6 +3,22 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppNavigation } from "../../../utils/functions";
+
+interface FoodCardProps {
+    image: any;
+    discount: any;
+    time: any;
+    name: any;
+    rating: any;
+    reviews: any;
+    location: any;
+    distance: any;
+    cuisines: any;
+    features: any;
+    item: any;
+    category?: string | null;
+}
+
 export default function FoodCard({
     image,
     discount,
@@ -14,11 +30,12 @@ export default function FoodCard({
     distance,
     cuisines,
     features,
-    item
-}) {
+    item,
+    category
+}: FoodCardProps) {
     const {goToRestaurantDetails} = useAppNavigation();
     return (
-        <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={()=>{goToRestaurantDetails({restroDetails:item})}}>
+        <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={()=>{goToRestaurantDetails({restroDetails:item, category: category})}}>
             {/* Image + overlay badges */}
             <View style={styles.imageWrapper}>
                 <Image source={{ uri: image }} style={styles.image} />

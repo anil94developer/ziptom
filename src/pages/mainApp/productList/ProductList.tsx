@@ -28,6 +28,8 @@ import {
 } from "../../../redux/slices/homeSlice";
 import { AppDispatch, RootState } from "../../../redux/store";
 import { useAppNavigation } from "../../../utils/functions";
+import { addToCart, updateQuantity, removeFromCart } from "../../../redux/slices/cartSlice";
+import { showToast } from "../../../redux/slices/toastSlice";
 
 type CategoryTab = {
   key: string;
@@ -54,8 +56,10 @@ const ProductList = () => {
     selectedCategoryId,
   } = useSelector((state: RootState) => state.home);
 
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+
   const [localSearchQuery, setLocalSearchQuery] = useState("");
-  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const isInitialMount = useRef(true);
 
   // Fetch categories on mount
@@ -144,11 +148,14 @@ const ProductList = () => {
 
   const categoryTabs: CategoryTab[] = useMemo(() => {
     const base: CategoryTab[] = [{ key: "all", label: "All" }];
-    const mapped = categories.map((item: Category) => ({
-      key: item._id,
-      label: item.name,
-      image: item.image,
-    }));
+    const mapped = categories
+      .filter((item: Category) => item._id || item.id)
+      .map((item: Category) => ({
+        key: item._id || item.id || "",
+        label: item.name,
+        image: item.image,
+      }))
+      .filter((item) => item.key !== "");
     return [...base, ...mapped];
   }, [categories]);
 
@@ -188,24 +195,130 @@ const ProductList = () => {
     );
   };
 
-  const renderProductCard = ({ item }: { item: NineNineProduct }) => {
+  const getCartQuantity = (productId: string) => {
+    const cartItem = cartItems.find((item) => item.id === productId);
+    return cartItem ? cartItem.quantity : 0;
+  };
+
+  const handleAddToCart = (item: any) => {
+    const productId = item._id || item.id;
+    const restaurantId = item?.restaurant?.id || item?.restaurant?._id || item?.restaurantId?.id || item?.restaurantId?._id || "";
+    
+    if (!productId) {
+      dispatch(showToast({ message: "Product ID is missing", type: "error" }));
+      return;
+    }
+
+    const quantity = getCartQuantity(productId);
+    
+    if (quantity === 0) {
+      dispatch(
+        addToCart({
+          id: productId,
+          title: item.name,
+          price: item.price,
+          quantity: 1,
+          image: item.image,
+          restaurantId: restaurantId,
+        })
+      );
+      dispatch(showToast({ message: "Item added to cart", type: "success" }));
+    } else {
+      dispatch(updateQuantity({ id: productId, quantity: quantity + 1 }));
+      dispatch(showToast({ message: "Quantity updated", type: "success" }));
+    }
+  };
+
+  const handleDecreaseQuantity = (productId: string) => {
+    const quantity = getCartQuantity(productId);
+    if (quantity > 1) {
+      dispatch(updateQuantity({ id: productId, quantity: quantity - 1 }));
+    } else {
+      dispatch(removeFromCart({ id: productId }));
+    }
+  };
+
+  const renderProductCard = ({ item }: { item: any }) => {
+    const productId = item._id || item.id;
+    const quantity = getCartQuantity(productId);
+    const hasRestaurant = item.restaurant || item.restaurantId;
+
     return (
       <TouchableOpacity
         onPress={() => {
-            goToRestaurantDetails({restroDetails:item})
-           }}
-      style={[styles.productCard, { backgroundColor: colors.surface }]}>
+          if (hasRestaurant) {
+            goToRestaurantDetails({ restroDetails: item.restaurant || item.restaurantId, category: item.categoryId?.id || item.categoryId?._id });
+          }
+        }}
+        style={[styles.productCard, { backgroundColor: colors.surface }]}
+        activeOpacity={0.9}
+      >
         <Image source={{ uri: item.image }} style={styles.productImage} />
         <View style={styles.productContent}>
-          <Text style={[styles.productTitle, { color: colors.text }]}>
-            {item.name}
-          </Text>
-          <Text style={[styles.productCategory, { color: colors.textSecondary }]}>
-            {item.categoryId?.name ?? "Unknown"}
-          </Text>
-          <Text style={[styles.productPrice, { color: colors.primary }]}>
-            ₹{item.price}
-          </Text>
+          <View style={styles.productHeaderRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.productTitle, { color: colors.text }]} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <Text style={[styles.productCategory, { color: colors.textSecondary }]} numberOfLines={1}>
+                {item.categoryId?.name || item.category?.name || "Unknown"}
+              </Text>
+              {item.restaurant?.name && (
+                <Text style={[styles.productRestaurant, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {item.restaurant.name}
+                </Text>
+              )}
+            </View>
+            {item.type && (
+              <View style={[
+                styles.typeBadge,
+                { backgroundColor: item.type === 'veg' ? '#4CAF50' : '#f44336' }
+              ]}>
+                <Text style={styles.typeText}>{item.type.toUpperCase()}</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.productFooter}>
+            <Text style={[styles.productPrice, { color: colors.primary }]}>
+              ₹{item.price}
+            </Text>
+            {quantity === 0 ? (
+              <TouchableOpacity
+                style={[styles.addButton, { backgroundColor: colors.primary }]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(item);
+                }}
+              >
+                <MaterialIcons name="add" size={20} color="#fff" />
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity
+                  style={[styles.quantityButton, { backgroundColor: colors.primary }]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleDecreaseQuantity(productId);
+                  }}
+                >
+                  <MaterialIcons name="remove" size={18} color="#fff" />
+                </TouchableOpacity>
+                <Text style={[styles.quantityText, { color: colors.text }]}>
+                  {quantity}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.quantityButton, { backgroundColor: colors.primary }]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(item);
+                  }}
+                >
+                  <MaterialIcons name="add" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -225,7 +338,7 @@ const ProductList = () => {
  
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, marginTop: 20 }}>
-      <Header title="Products" onBack={() => navigation.goBack()} />
+      <Header title="Products" onBack={() => navigation.goBack()} onAdd={() => {}} />
       <View style={styles.container}>
         {/* Search Bar */}
         <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
@@ -275,7 +388,7 @@ const ProductList = () => {
           ) : products.length ? (
             <FlatList
               data={products}
-              keyExtractor={(item) => item._id}
+              keyExtractor={(item: any) => item._id || item.id || Math.random().toString()}
               renderItem={renderProductCard}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.productListContent}
@@ -390,17 +503,76 @@ const styles = StyleSheet.create({
     padding: 12,
     justifyContent: "space-between",
   },
+  productHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
   productTitle: {
     fontSize: 16,
     fontWeight: "600",
+    flex: 1,
   },
   productCategory: {
     fontSize: 12,
     marginTop: 2,
   },
+  productRestaurant: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  typeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  typeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  productFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
   productPrice: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  quantityButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  quantityText: {
+    fontSize: 14,
+    fontWeight: "600",
+    paddingHorizontal: 12,
+    minWidth: 30,
+    textAlign: "center",
   },
   emptyState: {
     flex: 1,

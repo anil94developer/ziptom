@@ -16,6 +16,7 @@ import { useTheme } from "../../../theme/ThemeContext";
 import { foodItems } from "../../../enums/foods";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllRestraurantProducts, ProductItem } from "./../../../redux/slices/restaurantSlice"
+import { fetchProducts } from "../../../redux/slices/homeSlice";
 import { removeFromCart, addToCart, updateQuantity, addCart } from '../../../redux/slices/cartSlice';
 import { AppDispatch, RootState } from '../../../redux/store';
 import { Item } from "react-native-paper/lib/typescript/components/Drawer/Drawer";
@@ -23,6 +24,7 @@ import { showToast } from "../../../redux/slices/toastSlice";
 
 interface RouteParams {
     restroDetails?: any;
+    category?: string | null;
 }
 
 interface RestaurantDetailsProps {
@@ -32,16 +34,35 @@ interface RestaurantDetailsProps {
 }
 
 const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
-    const { restroDetails } = route.params;
+    const { restroDetails, category } = route.params;
     // console.log("item details", restroDetails)
 
     const dispatch = useDispatch<AppDispatch>();
     const cartItems = useSelector((state: RootState) => state.cart.items);
     const { restaurantProducts, restaurantDetails, loading: restaurantLoading, error: restaurantError } = useSelector((state: any) => state.restaurant);
+    const { products, loading: productsLoading } = useSelector((state: any) => state.home);
     const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
     
     // Use restaurant details from Redux if available, otherwise fallback to route params
     const restaurant = restaurantDetails || restroDetails;
+    
+    // Use products from homeSlice if category is provided, otherwise use restaurantProducts
+    // Map products to match ProductItem structure if needed
+    const displayProducts = category 
+        ? (products || []).map((product: any) => ({
+            id: product.id || product._id,
+            _id: product._id || product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            type: product.type,
+            image: product.image,
+            category: product.category,
+            restaurant: product.restaurant,
+            isActive: product.isActive,
+          }))
+        : restaurantProducts;
+    const isLoading = category ? productsLoading : restaurantLoading;
 
     // Debug logs
     // useEffect(() => { 
@@ -58,15 +79,23 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
 
     useEffect(() => {
         const getData = async () => {
-            const restaurantId = restroDetails?.restaurant?._id || restroDetails?.restaurant?.id || restroDetails?._id ;
-            
-            // alert(restaurantId)
-            if (restaurantId && typeof restaurantId === 'string') {
-                dispatch(fetchAllRestraurantProducts(restaurantId));
+            // If category is provided, fetch products by category
+            if (category) {
+                dispatch(fetchProducts({
+                    page: 1,
+                    limit: 50,
+                    categoryId: category,
+                }));
+            } else {
+                // Otherwise, fetch restaurant products
+                const restaurantId = restroDetails?.restaurant?._id || restroDetails?.restaurant?.id || restroDetails?._id;
+                if (restaurantId && typeof restaurantId === 'string') {
+                    dispatch(fetchAllRestraurantProducts(restaurantId));
+                }
             }
         }
         getData()
-    }, [dispatch, restroDetails?.restaurant?._id, restroDetails?.restaurant?.id])
+    }, [dispatch, restroDetails?.restaurant?._id, restroDetails?.restaurant?.id, category])
 
 
 
@@ -106,14 +135,15 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
                         <TouchableOpacity
                             style={styles.addButton}
                             onPress={async () => {
+                                const restaurantId = restaurant?._id || restaurant?.id || restroDetails?._id || restroDetails?.restaurant?._id || restroDetails?.restaurant?.id || "";
                                 dispatch(
                                     addToCart({
                                         id: itemId,
                                         title: item.name,
                                         price: item.price,
                                         quantity: 1,
-                                        image: item.image
-
+                                        image: item.image,
+                                        restaurantId: restaurantId
                                     })
                                 )
                                 dispatch(showToast({ message: "Item added to cart", type: "success" }));
@@ -194,7 +224,7 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
 
                 {/* Recommended */}
                 <Text style={styles.sectionTitle}>Recommended for you</Text>
-                {restaurantLoading ? (
+                {isLoading ? (
                     <View style={{ padding: 20, alignItems: 'center' }}>
                         <Text style={styles.subText}>Loading...</Text>
                     </View>
@@ -202,8 +232,8 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
                     <View style={{ padding: 20, alignItems: 'center' }}>
                         <Text style={[styles.subText, { color: 'red' }]}>Error: {restaurantError}</Text>
                     </View>
-                ) : restaurantProducts && restaurantProducts.length > 0 ? (
-                    restaurantProducts.map((item: ProductItem, index: number) => {
+                ) : displayProducts && displayProducts.length > 0 ? (
+                    displayProducts.map((item: ProductItem, index: number) => {
                         return renderItem(item);
                     })
                 ) : (
@@ -231,7 +261,7 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
                         <Text style={styles.modalTitle}>Menu</Text>
 
                         <FlatList
-                            data={restaurantProducts}
+                            data={displayProducts}
                             keyExtractor={(item) => item._id || item.id || Math.random().toString()}
                             numColumns={2}
                             columnWrapperStyle={{ justifyContent: "space-between" }}
@@ -342,13 +372,15 @@ const RestaurantDetails = ({ route }: RestaurantDetailsProps) => {
                                         <TouchableOpacity
                                             style={styles.addButton}
                                             onPress={async () => {
+                                                const restaurantId = restaurant?._id || restaurant?.id || restroDetails?._id || restroDetails?.restaurant?._id || restroDetails?.restaurant?.id || product?.restaurant?.id || "";
                                                 dispatch(
                                                     addToCart({
                                                         id: productId,
                                                         title: product.name,
                                                         price: product.price,
                                                         quantity: 1,
-                                                        image: product.image
+                                                        image: product.image,
+                                                        restaurantId: restaurantId
                                                     })
                                                 )
                                                 dispatch(showToast({ message: "Item added to cart", type: "success" }));

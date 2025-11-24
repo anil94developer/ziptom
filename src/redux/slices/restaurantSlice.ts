@@ -192,22 +192,26 @@ export const fetchAllRestraurantProducts = createAsyncThunk(
 );
 export const fetchRestaurants = createAsyncThunk(
   "restaurants/fetchRestaurants",
-  async (params: { latitude?: number; longitude?: number; raduis?: number } | undefined = undefined, { rejectWithValue }) => {
+  async (params: { latitude?: number; longitude?: number; raduis?: number; page?: number; limit?: number } | undefined = undefined, { rejectWithValue }) => {
     try {
       let endpoint = ENDPOINTS.ALL_RESTAURANTS;
+      const queryParams = new URLSearchParams();
+      
+      // Add pagination parameters
+      if (params?.page) queryParams.append("page", params.page.toString());
+      if (params?.limit) queryParams.append("limit", params.limit.toString());
       
       // Build query parameters if location data is provided
       // Using 'lat' and 'lng' as per API requirement
       if (params && (params.latitude || params.longitude)) {
-        const queryParams = new URLSearchParams();
         if (params.latitude) queryParams.append("lat", params.latitude.toString());
         if (params.longitude) queryParams.append("lng", params.longitude.toString());
         if (params.raduis) queryParams.append("raduis", params.raduis.toString());
-        
-        const queryString = queryParams.toString();
-        if (queryString) {
-          endpoint = `${ENDPOINTS.ALL_RESTAURANTS}?${queryString}`;
-        }
+      }
+      
+      const queryString = queryParams.toString();
+      if (queryString) {
+        endpoint = `${ENDPOINTS.ALL_RESTAURANTS}?${queryString}`;
       }
       
       console.log("Fetching restaurants from:", endpoint);

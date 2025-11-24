@@ -33,7 +33,7 @@ const CARD_WIDTH = 150;
 const HomeScreen = (props: any) => {
     const dispatch = useDispatch<AppDispatch>();
     const cartItems = useSelector((state: RootState) => state.cart.items);
-    const { products, categories, restaurants, vegType, loading: homeLoading, error: homeError, selectedCategoryId } = useSelector((state: any) => state.home);
+    const { products, budgetProducts, categories, restaurants, vegType, loading: homeLoading, error: homeError, selectedCategoryId } = useSelector((state: any) => state.home);
     const { loading, error, otpSent, userDetails } = useSelector((state: any) => state.auth);
 
 
@@ -70,10 +70,15 @@ const HomeScreen = (props: any) => {
                 setCurrentLocation(null);
             }
 
-            // Fetch home data
+            // Fetch home data - by default show all (no category filter)
             dispatch(fetchNineNineProducts());
             dispatch(fetchCategories());
             dispatch(fetchRestaurants());
+            // Fetch all products without category filter
+            dispatch(fetchProducts({
+                page: 1,
+                limit: 20,
+            }));
         }
         getHomeData();
     }, []);
@@ -223,8 +228,8 @@ const HomeScreen = (props: any) => {
                             <FlatList
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                data={products}
-                                keyExtractor={(item) => item.id}
+                                data={budgetProducts}
+                                keyExtractor={(item) => item._id || item.id}
                                 contentContainerStyle={{ paddingVertical: 10 }}
                                 renderItem={({ item }) => {
                                     const quantity = getQuantity(item.id);
@@ -247,13 +252,15 @@ const HomeScreen = (props: any) => {
                                                 <TouchableOpacity
                                                     style={styles.quantityContainer}
                                                     onPress={async () => {
+                                                        const restaurantId = item?.restaurant?.id || item?.restaurant?._id || item?.restaurantId?.id || item?.restaurantId?._id || "";
                                                         dispatch(
                                                             addToCart({
                                                                 id: item.id,
                                                                 title: item.name,
                                                                 price: item.price,
                                                                 quantity: 1,
-                                                                image: item.image
+                                                                image: item.image,
+                                                                restaurantId: restaurantId
                                                             })
                                                         )
                                                         dispatch(showToast({ message: "Item added to cart", type: "success" }));
@@ -332,32 +339,33 @@ const HomeScreen = (props: any) => {
                         <FlatList
                             style={{ backgroundColor: colors.surface, paddingTop: 30 }}
                             horizontal
-                            data={[{ _id: 'all', name: 'All', image: '' }, ...categories]}
+                            data={categories}
                             showsHorizontalScrollIndicator={false}
-                            keyExtractor={item => item._id || item.id || item.title || 'all'}
+                            keyExtractor={item => item.id || item.id || item.title}
                             contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 8 }}
                             renderItem={({ item }) => {
-                                const isAll = item._id === 'all';
-                                const isSelected = isAll ? !selectedCategoryId : selectedCategoryId === item._id;
+                                const isSelected =  selectedCategoryId === item.id;
                                 return (
                                     <TouchableOpacity
                                         onPress={() => {
-                                            if (isAll) {
-                                                // Clear category filter
+                                         
+                                            // Toggle: if already selected, deselect (show all), otherwise select
+                                            if (isSelected) {
+                                                // Clear category filter - show all
                                                 dispatch(setSelectedCategoryId(null));
-                                                // Fetch all products
+                                                // Fetch all products without category filter
                                                 dispatch(fetchProducts({
                                                     page: 1,
                                                     limit: 20,
                                                 }));
                                             } else {
-                                                // Set category filter
-                                                dispatch(setSelectedCategoryId(item._id));
+                                                // Set category filter - only one can be selected
+                                                dispatch(setSelectedCategoryId(item.id));
                                                 // Fetch products filtered by category
                                                 dispatch(fetchProducts({
                                                     page: 1,
                                                     limit: 20,
-                                                    categoryId: item._id,
+                                                    categoryId: item.id,
                                                 }));
                                             }
                                         }}
@@ -365,7 +373,7 @@ const HomeScreen = (props: any) => {
                                             styles.catContainer,
                                             isSelected && { backgroundColor: colors.primary, opacity: 0.8 }
                                         ]}>
-                                        {!isAll && <Image source={{ uri: item.image }} style={styles.catImg} />}
+                                        <Image source={{ uri: item.image }} style={styles.catImg} />
                                         <Text style={[
                                             { color: colors.text, fontSize: 12 },
                                             isSelected && { color: '#fff', fontWeight: 'bold' }
@@ -447,7 +455,8 @@ const HomeScreen = (props: any) => {
                         return (
                             <FoodCard
                                 image={item?.image}
-                                discount="66% off upto ₹126"
+                                
+                                discount={`50% off upto ₹ ${item?.price}`}
                                 time="20-25 MINS"
                                 name={item.name}
                                 rating={item?.restaurant?.rating?.average || item?.rating?.average || 5}
@@ -475,7 +484,7 @@ const HomeScreen = (props: any) => {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            {showInitialLoader ? (
+            {/* {showInitialLoader ? (
                 <View style={styles.loaderContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={[styles.loadingText, { color: colors.text }]}>Loading delicious food...</Text>
@@ -496,7 +505,7 @@ const HomeScreen = (props: any) => {
                         </View>
                     )}
                 </View>
-            ) : (
+            ) : ( */}
                 <FlatList
                     data={sections}
                     renderItem={renderItem}
@@ -514,7 +523,7 @@ const HomeScreen = (props: any) => {
                         />
                     }
                 />
-            )}
+            {/* )} */}
             {/* Header */}
 
             <ScrollView showsVerticalScrollIndicator={false}>

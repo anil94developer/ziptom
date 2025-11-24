@@ -11,17 +11,17 @@ export const ENDPOINTS = {
   RESTAURANT_PRODUCTS: "api/restaurant/",
   ALL_RESTAURANTS: "api/restaurant",
   CREATE_ORDER: "/api/app/auth/create-order",
-  ADD_ADDRESS: "/api/app/auth/add-address",
-  GET_ADDRESS: "/api/app/auth/get-address",
+  ADD_ADDRESS: "api/auth/address",
+  GET_ADDRESS: "api/auth/address",
+  UPDATE_ADDRESS: "api/auth/address",
   NEAR_BY_RESTUARANT: "api/app/auth/nearby-restaurants",
   PROFILE: "api/auth/profile",
   EDIT_PROFILE: "api/auth/profile",
-  GET_COUPONS:"/api/app/auth/get-coupons",
+  GET_COUPONS:"api/coupons",
+  VALIDATE_COUPON: "api/coupons/validate",
+  PLACE_ORDER: "api/orders",
   ADD_CART:"/api/app/auth/add-to-cart",
-
-
-
+  HIGH_PROTEIN: "api/high-protein",
   FETCH_MENU: "api/app/restaurants/",
-  PLACE_ORDER: "api/app/orders",
   FETCH_ORDERS: "api/app/orders/user/",
 };

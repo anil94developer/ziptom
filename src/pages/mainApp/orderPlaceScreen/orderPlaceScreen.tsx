@@ -17,15 +17,20 @@ import Header from "../../../componets/header";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../../theme/ThemeContext";
 import { createOrder } from "../../../redux/slices/orderSlice";
-import { addAddress, getAddress } from "../../../redux/slices/addressSlice";
+import { addAddress, getAddress, updateAddress, Address } from "../../../redux/slices/addressSlice";
+import { validateCoupon, clearValidatedCoupon } from "../../../redux/slices/couponsSlice";
+import { clearCart } from "../../../redux/slices/cartSlice";
 import { showToast } from "../../../redux/slices/toastSlice";
-import { RootState } from "../../../redux/store";
+import { AppDispatch, RootState } from "../../../redux/store";
 
 
-const OrderPlaceScreen = () => {
+const OrderPlaceScreen = ({ route }: any) => {
     const { colors } = useTheme();
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const navigation = useNavigation();
+    
+    // Get restaurantId from route params if available
+    const routeRestaurantId = route?.params?.restaurantId;
 
     // 🏠 Delivery Addresses
     // const [addresses, setAddresses] = useState([
@@ -61,11 +66,13 @@ const OrderPlaceScreen = () => {
     // 🧾 Coupon
     const [couponCode, setCouponCode] = useState("");
     const [discount, setDiscount] = useState(0);
+    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
 
     // 🛒 Cart Data (Redux)
     const cartItems = useSelector((state: RootState) => state?.cart?.items);
     const addresses = useSelector((state: RootState) => state?.address?.addresses);
     const loading = useSelector((state: RootState) => state?.address?.loading);
+    const { validatedCoupon, validating: validatingCoupon } = useSelector((state: any) => state.coupon || {});
 
 
 
@@ -76,23 +83,87 @@ const OrderPlaceScreen = () => {
         }
         getAddressFetch()
     }, [dispatch])
+    
+    // Update discount when validated coupon changes
+    useEffect(() => {
+        if (validatedCoupon) {
+            calculateDiscount(validatedCoupon);
+            setAppliedCoupon(validatedCoupon);
+        } else {
+            setDiscount(0);
+            setAppliedCoupon(null);
+        }
+    }, [validatedCoupon])
     // 💰 Price Calculations
     const productTotal = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0
     );
-    const gst = productTotal * 0.18; // 18% GST
-    const deliveryCharge = productTotal > 499 ? 0 : 40;
-    const totalAmount = productTotal + gst + deliveryCharge - discount;
+    const taxPercentage = 5; // 5% tax as per API
+    const taxAmount = productTotal * (taxPercentage / 100);
+    const deliveryCharge = productTotal > 499 ? 0 : 50; // 50 as per API
+    const totalAmount = productTotal + taxAmount + deliveryCharge - discount;
+
+    // Calculate discount based on coupon
+    const calculateDiscount = (coupon: any) => {
+        if (!coupon) {
+            setDiscount(0);
+            return;
+        }
+
+        let calculatedDiscount = 0;
+
+        if (coupon.discountType === "percentage") {
+            // Percentage discount
+            calculatedDiscount = (productTotal * coupon.discountValue) / 100;
+            // Apply max discount limit if exists
+            if (coupon.maxDiscountAmount && calculatedDiscount > coupon.maxDiscountAmount) {
+                calculatedDiscount = coupon.maxDiscountAmount;
+            }
+        } else if (coupon.discountType === "fixed") {
+            // Fixed amount discount
+            calculatedDiscount = coupon.discountValue;
+        }
+
+        // Ensure discount doesn't exceed product total
+        if (calculatedDiscount > productTotal) {
+            calculatedDiscount = productTotal;
+        }
+
+        setDiscount(calculatedDiscount);
+    };
 
     // 🏷️ Coupon validation
-    const handleApplyCoupon = () => {
-        if (couponCode.trim().toLowerCase() === "save10") {
-            setDiscount(productTotal * 0.1);
-            Alert.alert("✅ Success", "Coupon applied successfully!");
-        } else {
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) {
+            dispatch(showToast({ message: "Please enter a coupon code", type: "error" }));
+            return;
+        }
+
+        // Get restaurantId from cart items
+        const restaurantId = cartItems && cartItems.length > 0 
+            ? (cartItems[0]?.restaurantId || routeRestaurantId || "")
+            : routeRestaurantId || "";
+
+        if (!restaurantId) {
+            dispatch(showToast({ message: "Restaurant ID is required to validate coupon. Please add items to cart first.", type: "error" }));
+            return;
+        }
+
+        try {
+            await dispatch(validateCoupon({
+                couponCode: couponCode.trim().toUpperCase(),
+                restaurantId: restaurantId,
+            })).unwrap();
+            dispatch(showToast({ message: "Coupon applied successfully!", type: "success" }));
+        } catch (error: any) {
+            dispatch(clearValidatedCoupon());
             setDiscount(0);
-            Alert.alert("❌ Invalid", "Coupon code is not valid!");
+            setAppliedCoupon(null);
+            dispatch(showToast({ 
+                message: error || "Invalid coupon code", 
+                type: "error" 
+            }));
         }
     };
 
@@ -140,14 +211,50 @@ const OrderPlaceScreen = () => {
             return;
         }
 
+        // Get restaurantId from cart items (all items should have the same restaurantId)
+        const restaurantId = cartItems[0]?.restaurantId || routeRestaurantId || "";
+        if (!restaurantId) {
+            dispatch(showToast({ message: "Restaurant ID is required. Please add items from a restaurant.", type: "error" }));
+            return;
+        }
+        
+        // Validate all items are from the same restaurant
+        const allSameRestaurant = cartItems.every(item => item.restaurantId === restaurantId);
+        if (!allSameRestaurant) {
+            dispatch(showToast({ message: "All items must be from the same restaurant. Please clear cart and add items from one restaurant.", type: "error" }));
+            return;
+        }
+
         // Validate address is selected
         if (!selectedAddress || selectedAddress.trim() === "") {
             dispatch(showToast({ message: "Please select a delivery address", type: "error" }));
             return;
         }
 
+        // Refresh addresses to ensure we have the latest data
+        try {
+            await dispatch(getAddress()).unwrap();
+        } catch (error) {
+            console.log("Error refreshing addresses:", error);
+            // Continue anyway, use cached addresses
+        }
+
         // Validate address exists
-        const address = addresses?.find((a) => a.label === JSON.parse(selectedAddress).label);
+        let selectedAddr;
+        try {
+            selectedAddr = JSON.parse(selectedAddress);
+        } catch (error) {
+            dispatch(showToast({ message: "Invalid address selection. Please select an address again.", type: "error" }));
+            return;
+        }
+
+        // Find address in the refreshed list
+        const addressIdToFind = selectedAddr.id || selectedAddr.addressId || selectedAddr._id;
+        const address = addresses?.find((a) => {
+            const aId = a.id || a.addressId || (a as any)._id;
+            return aId === addressIdToFind;
+        });
+
         if (!address) {
             dispatch(showToast({ message: "Selected address not found. Please select a valid address.", type: "error" }));
             return;
@@ -159,32 +266,68 @@ const OrderPlaceScreen = () => {
             return;
         }
 
-        let orderData = {
-            payment_method: "Online",
-            coupon_code: couponCode,
-            delivery_charges: deliveryCharge,
-            tax_amount: "",
-            total_amount: totalAmount,
-            address_id: address.label +", "+address.address +", "+address.city +", "+address.country +", "+address.landmark,
-            items: cartItems
+        // Get address ID - prioritize id, then addressId, then _id
+        const deliveryAddressId = address.id || address.addressId || (address as any)._id || "";
+        if (!deliveryAddressId) {
+            console.error("Address object:", address);
+            dispatch(showToast({ message: "Address ID is missing. Please select the address again.", type: "error" }));
+            return;
         }
-        console.log(orderData)
+
+        console.log("Selected Address:", address);
+        console.log("Delivery Address ID:", deliveryAddressId);
+
+        // Prepare order items
+        const orderItems = cartItems.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+        }));
+
+        const orderData = {
+            restaurantId: restaurantId,
+            items: orderItems,
+            deliveryAddressId: deliveryAddressId,
+            paymentMethod: "Online",
+            deliveryCharge: deliveryCharge,
+            taxPercentage: taxPercentage,
+            couponCode: appliedCoupon ? couponCode.trim().toUpperCase() : "",
+        };
+
+        console.log("Order Data:", orderData);
+        console.log("Delivery Address ID being sent:", deliveryAddressId);
+        
         try {
             await dispatch(createOrder(orderData)).unwrap();
-            dispatch(showToast({ message: "Order Create successfully", type: "success" }));
+            dispatch(showToast({ message: "Order placed successfully!", type: "success" }));
+            dispatch(clearValidatedCoupon());
+            dispatch(clearCart()); // Clear cart after successful order placement
+            // Navigate back or to order confirmation
+            navigation.goBack();
+        } catch (err: any) {
+            console.error("Order placement error:", err);
+            const errorMessage = err?.message || err?.error?.details || err?.error?.message || "Failed to place order";
             
-        } catch (err) {
-            dispatch(showToast({ message: "Failed to Order Create", type: "error" }));
+            // Handle specific error cases
+            if (err?.error?.code === "NOT_FOUND" || errorMessage.includes("not found")) {
+                dispatch(showToast({ 
+                    message: "Address not found. Please select a different address or add a new one.", 
+                    type: "error" 
+                }));
+                // Refresh addresses and clear selection
+                dispatch(getAddress());
+                setSelectedAddress("");
+            } else {
+                dispatch(showToast({ 
+                    message: errorMessage, 
+                    type: "error" 
+                }));
+            }
         }
-        // Alert.alert(
-        //     "Order Placed 🎉",
-        //     `Your order will be delivered to:\n${address.label}\n${address.address}, ${address.city}, ${address.country}\n${address.landmark}`
-        // );
     };
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-            <Header title={"My Cart"} onBack={() => navigation.goBack()} />
+            <Header title={"My Cart"} onBack={() => navigation.goBack()} onAdd={() => {}} />
 
             <View style={styles.subContainer}>
                 {/* ADDRESS SECTION */}
@@ -196,40 +339,59 @@ const OrderPlaceScreen = () => {
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     data={addresses || []}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={[
-                                styles.addressCard,
-                                {
-                                    backgroundColor:
-                                        selectedAddress.name === item.name
+                            keyExtractor={(item) => item.id || item.label || Math.random().toString()}
+                    renderItem={({ item }) => {
+                        let isSelected = false;
+                        try {
+                            if (selectedAddress) {
+                                const parsed = JSON.parse(selectedAddress);
+                                const selectedId = parsed.id || parsed.addressId || parsed._id;
+                                const itemId = item.id || item.addressId || (item as any)._id;
+                                isSelected = selectedId === itemId;
+                            }
+                        } catch (e) {
+                            // Ignore parse errors
+                        }
+                        return (
+                            <TouchableOpacity
+                                style={[
+                                    styles.addressCard,
+                                    {
+                                        backgroundColor: isSelected
                                             ? colors.primary + "20"
                                             : colors.surface,
-                                    borderColor:
-                                    selectedAddress.name === item.name 
+                                        borderColor: isSelected
                                             ? colors.primary
                                             : colors.border,
-                                },
-                            ]}
-                            onPress={() => setSelectedAddress(JSON.stringify(item))}
-                        >
-                            <Text style={[styles.addressLabel, { color: colors.text }]}>
-                                {item.label}
-                            </Text>
-                            <Text style={[styles.addressText, { color: colors.textSecondary }]}>
-                                {item.address}, {item.city}
-                            </Text>
-                            <Text style={[styles.addressText, { color: colors.textSecondary }]}>
-                                {item.country}
-                            </Text>
-                            {item.landmark ? (
-                                <Text style={[styles.addressText, { color: colors.textSecondary }]}>
-                                    Landmark: {item.landmark}
+                                    },
+                                ]}
+                                onPress={() => {
+                                    // Store the address with all possible ID fields
+                                    const addressToStore = {
+                                        ...item,
+                                        id: item.id || item.addressId || (item as any)._id,
+                                        addressId: item.id || item.addressId || (item as any)._id,
+                                    };
+                                    setSelectedAddress(JSON.stringify(addressToStore));
+                                }}
+                            >
+                                <Text style={[styles.addressLabel, { color: colors.text }]}>
+                                    {item.label}
                                 </Text>
-                            ) : null}
-                        </TouchableOpacity>
-                    )}
+                                <Text style={[styles.addressText, { color: colors.textSecondary }]}>
+                                    {item.address}, {item.city}
+                                </Text>
+                                <Text style={[styles.addressText, { color: colors.textSecondary }]}>
+                                    {item.country}
+                                </Text>
+                                {item.landmark ? (
+                                    <Text style={[styles.addressText, { color: colors.textSecondary }]}>
+                                        Landmark: {item.landmark}
+                                    </Text>
+                                ) : null}
+                            </TouchableOpacity>
+                        );
+                    }}
                     contentContainerStyle={{ paddingVertical: 12 }}
                 />
 
@@ -254,7 +416,7 @@ const OrderPlaceScreen = () => {
                         >
                             <Image source={{ uri: item.image }} style={styles.img} />
                             <Text style={[styles.itemTitle, { color: colors.text }]}>
-                                {item.name}
+                                {item.title}
                             </Text>
                             <Text style={[styles.itemQty, { color: colors.textSecondary }]}>
                                 x{item.quantity}
@@ -285,10 +447,15 @@ const OrderPlaceScreen = () => {
                     <TouchableOpacity
                         style={[styles.applyButton, { backgroundColor: colors.primary }]}
                         onPress={handleApplyCoupon}
+                        disabled={validatingCoupon}
                     >
-                        <Text style={[styles.applyText, { color: colors.background }]}>
-                            Apply
-                        </Text>
+                        {validatingCoupon ? (
+                            <ActivityIndicator size="small" color={colors.background} />
+                        ) : (
+                            <Text style={[styles.applyText, { color: colors.background }]}>
+                                Apply
+                            </Text>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -303,8 +470,8 @@ const OrderPlaceScreen = () => {
                         <Text style={{ color: colors.text }}>₹{productTotal.toFixed(2)}</Text>
                     </View>
                     <View style={styles.billRow}>
-                        <Text style={{ color: colors.textSecondary }}>GST (18%)</Text>
-                        <Text style={{ color: colors.text }}>₹{gst.toFixed(2)}</Text>
+                        <Text style={{ color: colors.textSecondary }}>Tax ({taxPercentage}%)</Text>
+                        <Text style={{ color: colors.text }}>₹{taxAmount.toFixed(2)}</Text>
                     </View>
                     <View style={styles.billRow}>
                         <Text style={{ color: colors.textSecondary }}>Delivery Charge</Text>
@@ -351,7 +518,7 @@ const OrderPlaceScreen = () => {
                             Add New Address
                         </Text>
 
-                        {["label", "address", "city", "country", "landmark"].map((key) => (
+                        {(["label", "address", "city", "country", "landmark"] as const).map((key) => (
                             <TextInput
                                 key={key}
                                 style={[

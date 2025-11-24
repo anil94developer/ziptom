@@ -44,7 +44,7 @@ const CartScreen = () => {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <Header title={"My Cart"} onBack={() => navigation.goBack()} />
+                <Header title={"My Cart"} onBack={() => navigation.goBack()} onAdd={() => {}} />
 
                 {/* Restaurant Info */}
                 <View style={styles.restaurantHeader}>
@@ -63,7 +63,7 @@ const CartScreen = () => {
                 {cartItems.map((item) => (
                     <View key={item.id} style={styles.cartItem}>
                         <Image source={{ uri: item.image }} style={styles.cartImg} />
-                        <Text style={styles.itemName}>{item.name}sss</Text>
+                        <Text style={styles.itemName}>{item.title}</Text>
                         <View style={styles.counterRow}>
                             <TouchableOpacity
                                 style={styles.counterBtn}
@@ -107,7 +107,7 @@ const CartScreen = () => {
 
                             <Text style={styles.suggestName}>{item.title}</Text>
                             <Text style={styles.suggestPrice}>₹{item.price}</Text>
-                            <TouchableOpacity style={styles.addBtn} onPress={() => { dispatch(addToCart({ ...item, quantity: 1 })) }}>
+                            <TouchableOpacity style={styles.addBtn} onPress={() => { dispatch(addToCart({ ...item, quantity: 1, restaurantId: item.restaurantId })) }}>
                                 <Text style={styles.addBtnText}>+</Text>
                             </TouchableOpacity>
                         </View>

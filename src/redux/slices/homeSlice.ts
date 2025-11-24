@@ -51,14 +51,21 @@ export interface Restaurant {
 
 export interface Category {
   isActive: boolean;
-  _id: string;
+  _id?: string;
+  id?: string; // API may return id instead of _id
   name: string;
   description: string;
   isVegetarian: boolean;
   image: string;
-  created_at: string;
-  updated_at: string;
-  __v: number;
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  __v?: number;
+  // High protein specific fields
+  isHighProtein?: boolean;
+  highProteinId?: string;
+  deliveryTime?: number | null;
 }
 
 export interface NineNineProduct {
@@ -71,6 +78,17 @@ export interface NineNineProduct {
   image: string;
   __v: number;
   quantity?: number;
+}
+
+export interface HighProteinItem {
+  id: string;
+  name: string;
+  description: string;
+  proteinContent: number;
+  unit: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // --------------------
@@ -162,6 +180,54 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
+// Fetch high protein categories
+export const fetchHighProteinCategories = createAsyncThunk(
+  "home/fetchHighProteinCategories",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`${ENDPOINTS.CATEGORY}?highProtein=true`);
+      console.log("High Protein Categories API Response:", data);
+      return data?.data || data || [];
+    } catch (error: any) {
+      console.error("Error fetching high protein categories:", error);
+      return rejectWithValue(error.response?.data?.message || "Failed to load high protein categories");
+    }
+  }
+);
+
+// Fetch delivery time categories
+export const fetchDeliveryTimeCategories = createAsyncThunk(
+  "home/fetchDeliveryTimeCategories",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`${ENDPOINTS.CATEGORY}?deliveryTime=true`);
+      console.log("Delivery Time Categories API Response:", data);
+      return data?.data || data || [];
+    } catch (error: any) {
+      console.error("Error fetching delivery time categories:", error);
+      return rejectWithValue(error.response?.data?.message || "Failed to load delivery time categories");
+    }
+  }
+);
+
+// Fetch high protein items
+export const fetchHighProteinItems = createAsyncThunk(
+  "home/fetchHighProteinItems",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(ENDPOINTS.HIGH_PROTEIN);
+      console.log("High Protein Items API Response:", data);
+      return {
+        items: data?.data || data || [],
+        pagination: data?.pagination || null,
+      };
+    } catch (error: any) {
+      console.error("Error fetching high protein items:", error);
+      return rejectWithValue(error.response?.data?.message || "Failed to load high protein items");
+    }
+  }
+);
+
 // ✅ New: Fetch Restaurants
 export const fetchRestaurants = createAsyncThunk(
   "home/fetchRestaurants",
@@ -185,7 +251,11 @@ interface HomeState {
   loading: boolean;
   error: string | null;
   products: NineNineProduct[];
+  budgetProducts: NineNineProduct[]; // Products from /api/products/budget (99store)
   categories: Category[];
+  highProteinCategories: Category[]; // High protein categories
+  deliveryTimeCategories: Category[]; // Delivery time categories
+  highProteinItems: HighProteinItem[]; // High protein items
   restaurants: Restaurant[];
   vegType: boolean;
   // Pagination state
@@ -204,7 +274,11 @@ const initialState: HomeState = {
   loading: false,
   error: null,
   products: [],
+  budgetProducts: [], // Products from /api/products/budget
   categories: [],
+  highProteinCategories: [], // High protein categories
+  deliveryTimeCategories: [], // Delivery time categories
+  highProteinItems: [], // High protein items
   restaurants: [],
   vegType: true,
   // Pagination
@@ -229,6 +303,7 @@ const homeSlice = createSlice({
   reducers: {
     clearHomeData: (state) => {
       state.products = [];
+      state.budgetProducts = [];
       state.categories = [];
       state.restaurants = [];
       state.error = null;
@@ -260,14 +335,18 @@ const homeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Products
+      // Products from /api/products/budget (99store)
       .addCase(fetchNineNineProducts.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchNineNineProducts.fulfilled, (state, action: PayloadAction<NineNineProduct[]>) => {
         state.loading = false;
-        state.products = action.payload;
+        state.budgetProducts = action.payload; // Store in budgetProducts for 99store section
+        // Also update products if no category filter is active
+        if (!state.selectedCategoryId) {
+          state.products = action.payload;
+        }
       })
       .addCase(fetchNineNineProducts.rejected, (state, action) => {
         state.loading = false;
@@ -315,6 +394,58 @@ const homeSlice = createSlice({
         state.categories = action.payload;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // High Protein Categories
+      .addCase(fetchHighProteinCategories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHighProteinCategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.loading = false;
+        // Map categories to ensure consistent id field
+        state.highProteinCategories = (action.payload || []).map((cat: any) => ({
+          ...cat,
+          id: cat.id || cat._id,
+          _id: cat._id || cat.id,
+        }));
+      })
+      .addCase(fetchHighProteinCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Delivery Time Categories
+      .addCase(fetchDeliveryTimeCategories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDeliveryTimeCategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.loading = false;
+        // Map categories to ensure consistent id field
+        state.deliveryTimeCategories = (action.payload || []).map((cat: any) => ({
+          ...cat,
+          id: cat.id || cat._id,
+          _id: cat._id || cat.id,
+        }));
+      })
+      .addCase(fetchDeliveryTimeCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // High Protein Items
+      .addCase(fetchHighProteinItems.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHighProteinItems.fulfilled, (state, action: PayloadAction<{ items: HighProteinItem[]; pagination: any }>) => {
+        state.loading = false;
+        state.highProteinItems = action.payload.items || [];
+      })
+      .addCase(fetchHighProteinItems.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
